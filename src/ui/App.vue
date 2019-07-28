@@ -28,6 +28,7 @@
 			<QR :palette="paletteNeutral" />
 			<div class="texture texture1"></div>
 			<div class="texture texture2"></div>
+			<div class="texture texture3"></div>
 		</div>
 	</div>
 </template>
@@ -46,6 +47,7 @@
 	width: 9in;
 	height: 12in;
 	box-shadow: 0 8px 4px #0004;
+	transform: scale(1.5);
 }
 .board {
 	position: absolute;
@@ -62,14 +64,19 @@
 	right: 0;
 }
 .texture1 {
-	background: url("/static/texture.png") 0 0 / 7in;
+	background: url("/static/texture.png") 0 0 / 3.5in;
 	mix-blend-mode: multiply;
 	opacity: 0.8;
 }
 .texture2 {
-	background: url("/static/texture.png") 0 0 / 4in;
+	background: url("/static/texture.png") 0 0 / 2in;
 	mix-blend-mode: color-burn;
 	opacity: 1;
+}
+.texture3 {
+	background: radial-gradient(white, black);
+	mix-blend-mode: soft-light;
+	opacity: 0.2;
 }
 </style>
 

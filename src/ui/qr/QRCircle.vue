@@ -12,8 +12,8 @@
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	width: 1.5in;
-	height: 1.5in;
+	width: calc(1.5in + 0.6px);
+	height: calc(1.5in + 0.6px);
 	transform: translate(-50%, -50%);
 	mix-blend-mode: lighten;
 }
