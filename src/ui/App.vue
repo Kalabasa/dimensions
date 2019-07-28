@@ -1,17 +1,17 @@
 <template>
 	<div class="app">
 		<div class="boardContainer">
-			<Board class="board boardGray" :palette="paletteYellow" :tiles="tiles" />
+			<Board class="board" :palette="paletteMid" :tiles="tiles" />
 			<Board
-				class="board boardCyan"
+				class="board"
 				:style="{ clipPath: `circle(${circleCyan.radius * 100}% at ${circleCyan.x * 100}% ${circleCyan.y * 100}%)` }"
-				:palette="paletteCyan"
+				:palette="paletteCool"
 				:tiles="tiles"
 			/>
 			<Board
-				class="board boardRed"
+				class="board"
 				:style="{ clipPath: `circle(${circleRed.radius * 100}% at ${circleRed.x * 100}% ${circleRed.y * 100}%)` }"
-				:palette="paletteRed"
+				:palette="paletteWarm"
 				:tiles="tiles"
 			/>
 			<div
@@ -19,9 +19,9 @@
 				:style="{ clipPath: `circle(${circleCyan.radius * 100}% at ${circleCyan.x * 100}% ${circleCyan.y * 100}%)` }"
 			>
 				<Board
-					class="board boardFull"
+					class="board"
 					:style="{ clipPath: `circle(${circleRed.radius * 100}% at ${circleRed.x * 100}% ${circleRed.y * 100}%)` }"
-					:palette="paletteGray"
+					:palette="paletteNeutral"
 					:tiles="tiles"
 				/>
 			</div>
@@ -99,6 +99,9 @@ export default {
 				tileComponentPool[Math.floor(random() * tileComponentPool.length)],
 			orientation: Math.floor(random() * 8)
 		})),
+		//0x49AD9C cool main
+		//0xFCE9B5 mid main
+		//0xBB5B85 warm main
 		paletteFull: Palette.generatePalette(
 			0x316570,
 			0x48bbba,
@@ -106,28 +109,28 @@ export default {
 			0xe1db97,
 			0xe3e5e5
 		),
-		paletteCyan: Palette.generatePalette(
-			0x273842,
-			0x28a3a3,
-			0x48bbba,
-			0xcbcbcb,
-			0xd9ddda
+		paletteCool: Palette.generatePalette(
+			0x2D475E,
+			0x49AD9C,
+			0x99C89E,
+			0xDDD359,
+			0xF6E185
 		),
-		paletteRed: Palette.generatePalette(
-			0x692c37,
-			0xae3e48,
-			0xc07279,
-			0xcacaca,
-			0xe6e4dd
+		paletteWarm: Palette.generatePalette(
+			0x132141,
+			0x4D2B52,
+			0xBB5B85,
+			0xE0E4AD,
+			0xF0E0D0
 		),
-		paletteYellow: Palette.generatePalette(
-			0x656747,
-			0xa8af72,
-			0xd3b97f,
-			0xe1d897,
-			0xe5e5e3
+		paletteMid: Palette.generatePalette(
+			0x4B5A67,
+			0xFFD02D,
+			0xF8DD85,
+			0xF3F5CA,
+			0x34D1B3
 		),
-		paletteGray: Palette.generatePalette(
+		paletteNeutral: Palette.generatePalette(
 			0x2d2f39,
 			0x9898a1,
 			0xe8e8ee,
@@ -136,12 +139,12 @@ export default {
 		),
 		circleCyan: {
 			radius: 0.8,
-			x: 1.1,
+			x: 1.2,
 			y: 0.6
 		},
 		circleRed: {
 			radius: 1,
-			x: 0.3,
+			x: 0.4,
 			y: -0.15
 		}
 	})
