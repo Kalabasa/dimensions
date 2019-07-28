@@ -4,23 +4,23 @@
 			<Board class="board" :palette="paletteMid" :tiles="tiles" />
 			<Board
 				class="board"
-				:style="{ clipPath: `circle(${circleCyan.radius * 100}% at ${circleCyan.x * 100}% ${circleCyan.y * 100}%)` }"
+				:style="{ clipPath: `circle(${circleCool.radius * 100}% at ${circleCool.x * 100}% ${circleCool.y * 100}%)` }"
 				:palette="paletteCool"
 				:tiles="tiles"
 			/>
 			<Board
 				class="board"
-				:style="{ clipPath: `circle(${circleRed.radius * 100}% at ${circleRed.x * 100}% ${circleRed.y * 100}%)` }"
+				:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
 				:palette="paletteWarm"
 				:tiles="tiles"
 			/>
 			<div
 				class="board boardMask"
-				:style="{ clipPath: `circle(${circleCyan.radius * 100}% at ${circleCyan.x * 100}% ${circleCyan.y * 100}%)` }"
+				:style="{ clipPath: `circle(${circleCool.radius * 100}% at ${circleCool.x * 100}% ${circleCool.y * 100}%)` }"
 			>
 				<Board
 					class="board"
-					:style="{ clipPath: `circle(${circleRed.radius * 100}% at ${circleRed.x * 100}% ${circleRed.y * 100}%)` }"
+					:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
 					:palette="paletteNeutral"
 					:tiles="tiles"
 				/>
@@ -99,9 +99,6 @@ export default {
 				tileComponentPool[Math.floor(random() * tileComponentPool.length)],
 			orientation: Math.floor(random() * 8)
 		})),
-		//0x49AD9C cool main
-		//0xFCE9B5 mid main
-		//0xBB5B85 warm main
 		paletteFull: Palette.generatePalette(
 			0x316570,
 			0x48bbba,
@@ -110,39 +107,39 @@ export default {
 			0xe3e5e5
 		),
 		paletteCool: Palette.generatePalette(
-			0x2D475E,
-			0x49AD9C,
-			0x99C89E,
-			0xDDD359,
-			0xF6E185
+			0x2d475e,
+			0x49ad9c,
+			0x99c89e,
+			0xddd359,
+			0xf6e185
 		),
 		paletteWarm: Palette.generatePalette(
 			0x132141,
-			0x4D2B52,
-			0xBB5B85,
-			0xE0E4AD,
-			0xF0E0D0
+			0x4d2b52,
+			0xbb5b85,
+			0xe0e4ad,
+			0xf0e0d0
 		),
 		paletteMid: Palette.generatePalette(
-			0x4B5A67,
-			0xFFD02D,
-			0xF8DD85,
-			0xF3F5CA,
-			0x34D1B3
+			0x4b5a67,
+			0xffd02d,
+			0xf8dd85,
+			0xf3f5ca,
+			0xfafaf9
 		),
 		paletteNeutral: Palette.generatePalette(
-			0x2d2f39,
-			0x9898a1,
+			0x2b2d38,
+			0xb8b9c9,
 			0xe8e8ee,
-			0x7a7a82,
+			0xaaabb9,
 			0xcbced4
 		),
-		circleCyan: {
+		circleCool: {
 			radius: 0.8,
 			x: 1.2,
 			y: 0.6
 		},
-		circleRed: {
+		circleWarm: {
 			radius: 1,
 			x: 0.4,
 			y: -0.15
