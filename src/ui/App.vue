@@ -25,13 +25,14 @@
 					:tiles="tiles"
 				/>
 			</div>
+			<QR :palette="paletteNeutral" />
 			<div class="texture texture1"></div>
 			<div class="texture texture2"></div>
 		</div>
 	</div>
 </template>
 
-<style>
+<style scoped>
 .app {
 	background: #888;
 	display: flex;
