@@ -98,7 +98,9 @@ const tileComponentPool = [
 	TabletTile
 ];
 
-const random = seedrandom(Math.random().toString(36));
+const seed = Math.random().toString(36);
+const random = seedrandom(seed);
+console.log(seed);
 
 export default {
 	data: () => ({
