@@ -1,7 +1,7 @@
 var colorMap = {
 	dimensionsCool: [0x2d475e, 0x49ad9c, 0x99c89e],
 	dimensionsWarm: [0x4d2b52, 0xbb5b85],
-	dimensionsMid: [0xffd02d, 0xf8dd85, 0xf3f5ca, 0xfafaf9],
+	dimensionsMid: [0xffd02d, 0xf8dd85],
 	dimensionsNeutral: [0xb8b9c9, 0xe8e8ee, 0xaaabb9, 0xcbced4]
 };
 
@@ -85,6 +85,7 @@ function startTracking() {
 	tracker = new tracking.ColorTracker(Object.keys(colorMap));
 
 	tracker.minDimension = 1;
+	tracker.minGroupSize = 10;
 
 	tracker.on('track', function(event) {
 		var context = canvas.getContext('2d');
