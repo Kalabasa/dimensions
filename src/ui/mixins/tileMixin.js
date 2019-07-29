@@ -1,18 +1,20 @@
 import seedrandom from 'seedrandom';
 
 import Palette from 'color/palette';
+import { string } from 'postcss-selector-parser';
 
 const tileMixin = {
-	created() {
-		this._tileMixin_seed = Math.random().toString(36);
-	},
 	props: {
+		seed: {
+			type: String,
+			default: Math.random().toString(36),
+		},
 		orientation: Number,
 		palette: Palette
 	},
 	methods: {
 		tileProps(paletteMapping) {
-			const random = seedrandom(this._tileMixin_seed);
+			const random = seedrandom(this.seed);
 
 			const style = Object.keys(paletteMapping).reduce((obj, key) => {
 				return {

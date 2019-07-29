@@ -1,16 +1,18 @@
 <template>
 	<div class="app">
 		<div class="boardContainer">
-			<Board class="board" :paletteProvider="() => paletteMid" :tiles="tiles" />
+			<Board class="board" :seed="boardMidSeed" :paletteProvider="() => paletteMid" :tiles="tiles" />
 			<Board
 				class="board"
 				:style="{ clipPath: `circle(${circleCool.radius * 100}% at ${circleCool.x * 100}% ${circleCool.y * 100}%)` }"
+				:seed="boardCoolSeed"
 				:paletteProvider="() => paletteCool"
 				:tiles="tiles"
 			/>
 			<Board
 				class="board"
 				:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
+				:seed="boardWarmSeed"
 				:paletteProvider="() => paletteWarm"
 				:tiles="tiles"
 			/>
@@ -21,6 +23,7 @@
 				<Board
 					class="board"
 					:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
+					:seed="boardNeutralSeed"
 					:paletteProvider="neutralPaletteProvider()"
 					:tiles="tiles"
 				/>
@@ -100,7 +103,7 @@ const tileComponentPool = [
 ];
 
 const urlParams = new URLSearchParams(window.location.search);
-const seedParam = urlParams.get('seed');
+const seedParam = urlParams.get("seed");
 const seed = seedParam || Math.random().toString(36);
 const random = seedrandom(seed);
 console.log(seed);
@@ -163,7 +166,11 @@ export default {
 			radius: 1,
 			x: 0.4,
 			y: -0.15
-		}
+		},
+		boardMidSeed: random().toString(36),
+		boardCoolSeed: random().toString(36),
+		boardWarmSeed: random().toString(36),
+		boardNeutralSeed: random().toString(36)
 	}),
 	methods: {
 		neutralPaletteProvider() {
