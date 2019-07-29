@@ -91,16 +91,16 @@ function startTracking() {
 			context.strokeRect(x, y, width, height);
 			context.font = 'bold 16px sans-serif';
 			context.fillStyle = 'white';
-			context.strokeStyle = 'black';
-			context.fillText(item.color, x + width / 2, y + height / 2);
+			context.strokeStyle = 'solid 16px black';
 			context.strokeText(item.color, x + width / 2, y + height / 2);
+			context.fillText(item.color, x + width / 2, y + height / 2);
 		});
 	});
 
 	trackingLoop();
 }
 
-function createColorFunction(r, g, b, threshold = 128) {
+function createColorFunction(r, g, b, threshold = 96) {
 	return function(sr, sg, sb) {
 		return computeColorDistance(r, g, b, sr, sg, sb) < threshold;
 	};
