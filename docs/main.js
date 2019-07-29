@@ -98,7 +98,7 @@ function startTracking() {
 	trackingLoop();
 }
 
-function createColorFunction(r, g, b, threshold = 64) {
+function createColorFunction(r, g, b, threshold = 128) {
 	return function(sr, sg, sb) {
 		return computeColorDistance(r, g, b, sr, sg, sb) < threshold;
 	};
