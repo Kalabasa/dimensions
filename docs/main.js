@@ -96,8 +96,7 @@ function startTracking() {
 			const y = (item.y / snapshotCanvas.height) * canvas.height;
 			const width = (item.width / snapshotCanvas.width) * canvas.width;
 			const height = (item.height / snapshotCanvas.height) * canvas.height;
-			context.strokeStyle =
-				'16px ' + chroma(colorMap[item.color][0]).hex();
+			context.strokeStyle = '16px ' + chroma(colorMap[item.color][0]).hex();
 			context.strokeRect(x, y, width, height);
 			context.font = 'bold 16px sans-serif';
 			context.fillStyle = 'white';
@@ -110,22 +109,18 @@ function startTracking() {
 	trackingLoop();
 }
 
-function createColorFunction(colors, threshold = 35) {
+function createColorFunction(colors, threshold = 12) {
 	return function(sr, sg, sb) {
-		for(var color of colors) {
-			const r = (color >> 16) & 0xff;
-			const g = (color >> 8) & 0xff;
-			const b = color & 0xff;
-			if(computeColorDistance(r, g, b, sr, sg, sb) < threshold) {
+		for (var color of colors) {
+			if (
+				computeColorDistance(color, (sr << 16) | (sg << 8) | sb) < threshold
+			) {
 				return true;
 			}
 		}
 	};
 }
 
-function computeColorDistance(r1, g1, b1, r2, g2, b2) {
-	var dr = r2 - r1;
-	var dg = g2 - g1;
-	var db = b2 - b1;
-	return Math.sqrt(2 * dr * dr + 4 * dg * dg + 3 * db * db);
+function computeColorDistance(color1, color2) {
+	return chroma.deltaE(color1, color2);
 }
