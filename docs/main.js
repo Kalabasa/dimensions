@@ -89,7 +89,7 @@ function startTracking() {
 			const height = item.height / snapshotCanvas.height * canvas.height;
 			context.strokeStyle = '16px #' + colorMap[item.color].toString(16).padStart(6, '0');
 			context.strokeRect(x, y, width, height);
-			context.font = '16px sans-serif';
+			context.font = 'bold 16px sans-serif';
 			context.fillStyle = 'white';
 			context.strokeStyle = 'black';
 			context.fillText(item.color, x + width / 2, y + height / 2);
