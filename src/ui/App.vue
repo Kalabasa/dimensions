@@ -47,7 +47,7 @@
 	width: 9in;
 	height: 12in;
 	box-shadow: 0 8px 4px #0004;
-	transform: scale(1.5);
+	transform: scale(1.2);
 }
 .board {
 	position: absolute;
