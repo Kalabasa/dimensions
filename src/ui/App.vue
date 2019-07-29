@@ -99,7 +99,9 @@ const tileComponentPool = [
 	TabletTile
 ];
 
-const seed = Math.random().toString(36);
+const urlParams = new URLSearchParams(window.location.search);
+const seedParam = urlParams.get('seed');
+const seed = seedParam || Math.random().toString(36);
 const random = seedrandom(seed);
 console.log(seed);
 
