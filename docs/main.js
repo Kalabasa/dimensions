@@ -7,28 +7,16 @@ var colorMap = {
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
 
-var video, videoDisplay, snapshotCanvas, canvas, videoStreamSettings, tracker;
-
-Object.entries(colorMap).forEach(function(entry) {
-	tracking.ColorTracker.registerColor(entry[0], createColorFunction(entry[1]));
-});
+var video;
+var canvas;
+var canvasContext;
+var videoStreamSettings;
 
 function onDocumentLoad() {
 	video = document.getElementById('video');
-	videoDisplay = document.getElementById('videoDisplay');
-	snapshotCanvas = document.getElementById('snapshotCanvas');
 	canvas = document.getElementById('canvas');
+	canvasContext = canvas.getContext('2d');
 
-	snapshotCanvas.width = 128;
-	snapshotCanvas.height = 128;
-
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
-
-	captureVideo(startTracking);
-}
-
-function captureVideo(callback) {
 	var getUserMedia =
 		(navigator.mediaDevices &&
 			navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)) ||
@@ -43,13 +31,14 @@ function captureVideo(callback) {
 					facingMode: { ideal: 'environment' }
 				}
 			}).then(function(stream) {
+				videoStreamSettings = stream.getVideoTracks()[0].getSettings();
+				canvas.width = videoStreamSettings.width;
+				canvas.height = videoStreamSettings.height;
+
 				video.srcObject = stream;
 				video.play();
 
-				videoDisplay.srcObject = stream;
-				videoDisplay.play();
-
-				callback();
+				video.addEventListener('play', loop);
 			});
 		} catch (error) {
 			alert('Something went wrong while getting the camera stream.');
@@ -59,64 +48,54 @@ function captureVideo(callback) {
 	}
 }
 
-function copySnapshot() {
-	var context = snapshotCanvas.getContext('2d');
-	context.drawImage(
-		video,
+function loop() {
+	process();
+	setTimeout(loop, 0);
+}
+
+function process() {
+	if (!video.videoWidth || !video.videoHeight) return;
+
+	canvasContext.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+	const frame = canvasContext.getImageData(
 		0,
 		0,
 		video.videoWidth,
-		video.videoHeight,
-		0,
-		0,
-		snapshotCanvas.width,
-		snapshotCanvas.height
+		video.videoHeight
 	);
+	const l = frame.data.length / 4;
+
+	let maxRGB = 1;
+	for (let i = 0; i < l; i++) {
+		const r = frame.data[i * 4 + 0];
+		const g = frame.data[i * 4 + 1];
+		const b = frame.data[i * 4 + 2];
+		const rgb = r + g + b;
+		maxRGB = Math.max(maxRGB, rgb);
+	}
+	let white = maxRGB / 3;
+
+	for (let i = 0; i < l; i++) {
+		const r = frame.data[i * 4 + 0] * 0xff / white;
+		const g = frame.data[i * 4 + 1] * 0xff / white;
+		const b = frame.data[i * 4 + 2] * 0xff / white;
+		// frame.data[i * 4 + 0] = Math.floor(r);
+		// frame.data[i * 4 + 1] = Math.floor(g);
+		// frame.data[i * 4 + 2] = Math.floor(b);
+		const coolMask = (colorDistance(r, g, b, 0x49, 0xad, 0x9c) < 88) * 0xff;
+		const warmMask1 = (colorDistance(r, g, b, 0x42, 0x25, 0xb2) < 96) * 0xff;
+		const warmMask2 = (colorDistance(r, g, b, 0xbb, 0x5b, 0x85) < 64) * 0xff;
+		const midMask = (colorDistance(r, g, b, 0xf8, 0xdd, 0x85) < 64) * 0xff;
+		frame.data[i * 4 + 0] = 0xff & (warmMask1 | warmMask2);
+		frame.data[i * 4 + 1] = 0xff & midMask;
+		frame.data[i * 4 + 2] = 0xff & coolMask;
+	}
+	canvasContext.putImageData(frame, 0, 0);
 }
 
-function trackingLoop() {
-	copySnapshot();
-	tracking.track(snapshotCanvas, tracker);
-
-	requestAnimationFrame(trackingLoop);
-}
-
-function startTracking() {
-	tracker = new tracking.ColorTracker(Object.keys(colorMap));
-
-	tracker.minDimension = 1;
-	tracker.minGroupSize = 4;
-
-	tracker.on('track', function(event) {
-		var context = canvas.getContext('2d');
-		context.clearRect(0, 0, canvas.width, canvas.height);
-
-		event.data.forEach(function(item) {
-			const x = (item.x / snapshotCanvas.width) * canvas.width;
-			const y = (item.y / snapshotCanvas.height) * canvas.height;
-			const width = (item.width / snapshotCanvas.width) * canvas.width;
-			const height = (item.height / snapshotCanvas.height) * canvas.height;
-			context.strokeStyle = '16px ' + chroma(colorMap[item.color][0]).hex();
-			context.strokeRect(x, y, width, height);
-			context.font = 'bold 16px sans-serif';
-			context.fillStyle = 'white';
-			context.strokeStyle = 'solid 16px black';
-			context.strokeText(item.color, x + width / 2, y + height / 2);
-			context.fillText(item.color, x + width / 2, y + height / 2);
-		});
-	});
-
-	trackingLoop();
-}
-
-function createColorFunction(colors, threshold = 16) {
-	return function(sr, sg, sb) {
-		for (var color of colors) {
-			return computeColorDistance(color, (sr << 16) | (sg << 8) | sb) < threshold;
-		}
-	};
-}
-
-function computeColorDistance(color1, color2) {
-	return chroma.deltaE(color1, color2);
+function colorDistance(r, g, b, r2, g2, b2) {
+	const dr = r - r2;
+	const dg = g - g2;
+	const db = b - b2;
+	return Math.sqrt(dr * dr + dg * dg + db * db);
 }
