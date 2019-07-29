@@ -19,8 +19,8 @@ function onDocumentLoad() {
 	snapshotCanvas = document.getElementById('snapshotCanvas');
 	canvas = document.getElementById('canvas');
 
-	snapshotCanvas.width = 160;
-	snapshotCanvas.height = 160;
+	snapshotCanvas.width = 100;
+	snapshotCanvas.height = 100;
 
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
@@ -85,7 +85,7 @@ function startTracking() {
 	tracker = new tracking.ColorTracker(Object.keys(colorMap));
 
 	tracker.minDimension = 1;
-	tracker.minGroupSize = 10;
+	tracker.minGroupSize = 4;
 
 	tracker.on('track', function(event) {
 		var context = canvas.getContext('2d');
@@ -109,7 +109,7 @@ function startTracking() {
 	trackingLoop();
 }
 
-function createColorFunction(colors, threshold = 24) {
+function createColorFunction(colors, threshold = 17) {
 	return function(sr, sg, sb) {
 		for (var color of colors) {
 			if (
