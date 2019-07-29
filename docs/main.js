@@ -109,7 +109,7 @@ function startTracking() {
 	trackingLoop();
 }
 
-function createColorFunction(colors, threshold = 12) {
+function createColorFunction(colors, threshold = 24) {
 	return function(sr, sg, sb) {
 		for (var color of colors) {
 			if (
