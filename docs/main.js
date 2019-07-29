@@ -112,11 +112,7 @@ function startTracking() {
 function createColorFunction(colors, threshold = 17) {
 	return function(sr, sg, sb) {
 		for (var color of colors) {
-			if (
-				computeColorDistance(color, (sr << 16) | (sg << 8) | sb) < threshold
-			) {
-				return true;
-			}
+			return computeColorDistance(color, (sr << 16) | (sg << 8) | sb) < threshold;
 		}
 	};
 }
