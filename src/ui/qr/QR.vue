@@ -80,7 +80,7 @@ export default {
 			"--qrColor": chroma(darkestColor.tones[1]).hex()
 		};
 		return [
-			createElement(QRCircle, { style: circleStyle }),
+			// createElement(QRCircle, { style: circleStyle }),
 			createElement(QRImage, { style: imageStyle })
 		];
 	}

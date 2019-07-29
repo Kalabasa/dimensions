@@ -1,7 +1,12 @@
 <template>
 	<div class="board">
 		<template v-for="(tile, index) in tiles">
-			<component :key="index" :is="tile.component" :palette="palette" :orientation="tile.orientation" />
+			<component
+				:key="index"
+				:is="tile.component"
+				:palette="paletteProvider(index)"
+				:orientation="tile.orientation"
+			/>
 		</template>
 	</div>
 </template>
@@ -18,7 +23,7 @@ import Palette from "color/palette";
 
 export default {
 	props: {
-		palette: Palette,
+		paletteProvider: Function,
 		tiles: Array
 	}
 };

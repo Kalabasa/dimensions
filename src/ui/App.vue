@@ -1,17 +1,17 @@
 <template>
 	<div class="app">
 		<div class="boardContainer">
-			<Board class="board" :palette="paletteMid" :tiles="tiles" />
+			<Board class="board" :paletteProvider="() => paletteMid" :tiles="tiles" />
 			<Board
 				class="board"
 				:style="{ clipPath: `circle(${circleCool.radius * 100}% at ${circleCool.x * 100}% ${circleCool.y * 100}%)` }"
-				:palette="paletteCool"
+				:paletteProvider="() => paletteCool"
 				:tiles="tiles"
 			/>
 			<Board
 				class="board"
 				:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
-				:palette="paletteWarm"
+				:paletteProvider="() => paletteWarm"
 				:tiles="tiles"
 			/>
 			<div
@@ -21,7 +21,7 @@
 				<Board
 					class="board"
 					:style="{ clipPath: `circle(${circleWarm.radius * 100}% at ${circleWarm.x * 100}% ${circleWarm.y * 100}%)` }"
-					:palette="paletteNeutral"
+					:paletteProvider="neutralPaletteProvider()"
 					:tiles="tiles"
 				/>
 			</div>
@@ -48,6 +48,7 @@
 	height: 12in;
 	box-shadow: 0 8px 4px #0004;
 	transform: scale(1.2);
+	cursor: pointer;
 }
 .board {
 	position: absolute;
@@ -144,6 +145,13 @@ export default {
 			0xaaabb9,
 			0xcbced4
 		),
+		paletteNeutralLight: Palette.generatePalette(
+			0xb8b9c9,
+			0xe8e8ee,
+			0xe8e8ee,
+			0xcbced4,
+			0xcbced4
+		),
 		circleCool: {
 			radius: 0.8,
 			x: 1.2,
@@ -154,6 +162,20 @@ export default {
 			x: 0.4,
 			y: -0.15
 		}
-	})
+	}),
+	methods: {
+		neutralPaletteProvider() {
+			return index => {
+				const x = index % 6;
+				const y = Math.floor(index / 6);
+
+				if (Math.abs(x - 2.5) < 0.5001 && Math.abs(y - 3.5) < 0.5001) {
+					return this.paletteNeutralLight;
+				} else {
+					return this.paletteNeutral;
+				}
+			};
+		}
+	}
 };
 </script>
