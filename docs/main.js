@@ -1,8 +1,8 @@
 var colorMap = {
-	dimensionsCool: 0x99c89e,
-	dimensionsWarm: 0xbb5b85,
-	dimensionsMid: 0xf8dd85,
-	dimensionsNeutral: 0xe8e8ee
+	dimensionsCool: [0x2d475e, 0x49ad9c, 0x99c89e],
+	dimensionsWarm: [0x4d2b52, 0xbb5b85],
+	dimensionsMid: [0xffd02d, 0xf8dd85, 0xf3f5ca, 0xfafaf9],
+	dimensionsNeutral: [0xb8b9c9, 0xe8e8ee, 0xaaabb9, 0xcbced4]
 };
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
@@ -10,11 +10,7 @@ document.addEventListener('DOMContentLoaded', onDocumentLoad);
 var video, videoDisplay, snapshotCanvas, canvas, videoStreamSettings, tracker;
 
 Object.entries(colorMap).forEach(function(entry) {
-	var color = entry[1];
-	var r = (color >> 16) & 0xff;
-	var g = (color >> 8) & 0xff;
-	var b = color & 0xff;
-	tracking.ColorTracker.registerColor(entry[0], createColorFunction(r, g, b));
+	tracking.ColorTracker.registerColor(entry[0], createColorFunction(entry[1]));
 });
 
 function onDocumentLoad() {
@@ -64,8 +60,18 @@ function captureVideo(callback) {
 }
 
 function copySnapshot() {
-  var context = snapshotCanvas.getContext('2d');
-  context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+	var context = snapshotCanvas.getContext('2d');
+	context.drawImage(
+		video,
+		0,
+		0,
+		video.videoWidth,
+		video.videoHeight,
+		0,
+		0,
+		snapshotCanvas.width,
+		snapshotCanvas.height
+	);
 }
 
 function trackingLoop() {
@@ -78,16 +84,19 @@ function trackingLoop() {
 function startTracking() {
 	tracker = new tracking.ColorTracker(Object.keys(colorMap));
 
+	tracker.minDimension = 1;
+
 	tracker.on('track', function(event) {
 		var context = canvas.getContext('2d');
 		context.clearRect(0, 0, canvas.width, canvas.height);
-		
+
 		event.data.forEach(function(item) {
-			const x = item.x / snapshotCanvas.width * canvas.width;
-			const y = item.y / snapshotCanvas.height * canvas.height;
-			const width = item.width / snapshotCanvas.width * canvas.width;
-			const height = item.height / snapshotCanvas.height * canvas.height;
-			context.strokeStyle = '16px #' + colorMap[item.color].toString(16).padStart(6, '0');
+			const x = (item.x / snapshotCanvas.width) * canvas.width;
+			const y = (item.y / snapshotCanvas.height) * canvas.height;
+			const width = (item.width / snapshotCanvas.width) * canvas.width;
+			const height = (item.height / snapshotCanvas.height) * canvas.height;
+			context.strokeStyle =
+				'16px ' + chroma(colorMap[item.color][0]).hex();
 			context.strokeRect(x, y, width, height);
 			context.font = 'bold 16px sans-serif';
 			context.fillStyle = 'white';
@@ -100,9 +109,16 @@ function startTracking() {
 	trackingLoop();
 }
 
-function createColorFunction(r, g, b, threshold = 96) {
+function createColorFunction(colors, threshold = 35) {
 	return function(sr, sg, sb) {
-		return computeColorDistance(r, g, b, sr, sg, sb) < threshold;
+		for(var color of colors) {
+			const r = (color >> 16) & 0xff;
+			const g = (color >> 8) & 0xff;
+			const b = color & 0xff;
+			if(computeColorDistance(r, g, b, sr, sg, sb) < threshold) {
+				return true;
+			}
+		}
 	};
 }
 
