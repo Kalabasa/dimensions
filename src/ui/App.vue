@@ -28,7 +28,7 @@
 					:tiles="tiles"
 				/>
 			</div>
-			<QR :palette="paletteNeutral" />
+			<QR v-if="!noQr" :palette="paletteNeutral" />
 			<div class="texture texture1"></div>
 			<div class="texture texture2"></div>
 			<div class="texture texture3"></div>
@@ -103,7 +103,11 @@ const tileComponentPool = [
 ];
 
 const urlParams = new URLSearchParams(window.location.search);
+const noQrParam = urlParams.get("noqr");
 const seedParam = urlParams.get("seed");
+
+const noQr = noQrParam !== null;
+
 const seed = seedParam || Math.random().toString(36);
 const random = seedrandom(seed);
 console.log(seed);
@@ -157,28 +161,53 @@ export default {
 			0xcbced4,
 			0xcbced4
 		),
-		circleCool: {
-			radius: 0.8,
-			x: 1.2,
-			y: 0.6
-		},
-		circleWarm: {
-			radius: 1,
-			x: 0.4,
-			y: -0.15
-		},
+		circleCool: noQr
+			? (() => {
+					const angle = random() * 2 * Math.PI;
+					const length = 0.3 + random() * 0.6;
+					return {
+						radius: 0.3 + random() * 0.6,
+						x: 0.5 + Math.cos(angle) * length,
+						y: 0.5 + Math.sin(angle) * length
+					};
+			  })()
+			: {
+					radius: 0.8,
+					x: 1.2,
+					y: 0.6
+			  },
+		circleWarm: noQr
+			? (() => {
+					const angle = random() * 2 * Math.PI;
+					const length = 0.3 + random() * 0.6;
+					return {
+						radius: 0.3 + random() * 0.6,
+						x: 0.5 + Math.cos(angle) * length,
+						y: 0.5 + Math.sin(angle) * length
+					};
+			  })()
+			: {
+					radius: 1,
+					x: 0.4,
+					y: -0.15
+			  },
 		boardMidSeed: random().toString(36),
 		boardCoolSeed: random().toString(36),
 		boardWarmSeed: random().toString(36),
 		boardNeutralSeed: random().toString(36)
 	}),
+	computed: {
+		noQr() {
+			return noQr;
+		}
+	},
 	methods: {
 		neutralPaletteProvider() {
 			return index => {
 				const x = index % 6;
 				const y = Math.floor(index / 6);
 
-				if (Math.abs(x - 2.5) < 0.5001 && Math.abs(y - 3.5) < 0.5001) {
+				if (!noQr && Math.abs(x - 2.5) < 0.5001 && Math.abs(y - 3.5) < 0.5001) {
 					return this.paletteNeutralLight;
 				} else {
 					return this.paletteNeutral;
