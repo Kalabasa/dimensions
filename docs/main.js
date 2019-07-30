@@ -439,8 +439,8 @@ function update() {
 		}
 	}
 
-	var spawn = time < 30 ? 0 : Math.ceil(4 / (time - 30 + 1));
-	while (spawn > 0 && particles.length < 150) {
+	var spawn = (time >= 30 && Math.random() < 0.25) ? 1 : 0;
+	while (spawn > 0 && particles.length < 60) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
@@ -477,9 +477,9 @@ function updateParticle(particle) {
 	particle.object.position.add(particle.velocity);
 
 	particle.object.scale.set(
-		particle.object.scale.x * 0.6 + 2 * 0.4,
-		particle.object.scale.y * 0.6 + 2 * 0.4,
-		particle.object.scale.z * 0.6 + 2 * 0.4
+		particle.object.scale.x * 0.6 + 3 * 0.4,
+		particle.object.scale.y * 0.6 + 3 * 0.4,
+		particle.object.scale.z * 0.6 + 3 * 0.4
 	);
 
 	if (particle.id % 4 < 3) {
@@ -497,7 +497,7 @@ function updateParticle(particle) {
 	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
 	particle.object.quaternion.slerp(tmpQuaternion, 0.0008);
 
-	var altitude = Math.sin(particle.id + time * 0.004);
+	var altitude = Math.pow(Math.sin(particle.id + time * 0.004), 2);
 	var orbitRadius = particle.object.position
 		.clone()
 		.setY(camera.position.y)
@@ -526,9 +526,7 @@ function updateParticle(particle) {
 	);
 	particle.velocity.multiplyScalar(0.97);
 
-	if (time % 6 === 0) {
-		particle.trail.advance();
-	}
+	particle.trail.advance();
 	particle.trail.updateHead();
 }
 
@@ -568,7 +566,7 @@ function createParticle(type) {
 		1
 	);
 
-	var trailLength = 16;
+	var trailLength = 200;
 
 	particle.trail.initialize(
 		trailMaterial,
