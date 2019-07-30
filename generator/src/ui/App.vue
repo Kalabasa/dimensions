@@ -119,13 +119,6 @@ export default {
 				tileComponentPool[Math.floor(random() * tileComponentPool.length)],
 			orientation: Math.floor(random() * 8)
 		})),
-		paletteFull: Palette.generatePalette(
-			0x316570,
-			0x48bbba,
-			0xd37d85,
-			0xe1db97,
-			0xe3e5e5
-		),
 		paletteCool: Palette.generatePalette(
 			0x2d475e,
 			0x49ad9c,
