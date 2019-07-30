@@ -9,11 +9,14 @@ var titleScreen;
 var video;
 var canvas;
 var startButton;
+var hud;
+
 var scene;
 var camera;
 var controls;
 var renderer;
 
+var lockedIn = false;
 var particles = [];
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
@@ -193,8 +196,10 @@ function onDocumentLoad() {
 	video = document.getElementById('video');
 	canvas = document.getElementById('canvas');
 	startButton = document.getElementById('startButton');
+	hud = document.getElementById('hud');
 
 	startButton.addEventListener('click', start);
+	hud.addEventListener('click', lockIn);
 }
 
 function start() {
@@ -258,6 +263,12 @@ function start() {
 	loop();
 }
 
+function lockIn() {
+	lockedIn = true;
+
+	hud.style.display = 'none';
+}
+
 function loop() {
 	update();
 
@@ -267,13 +278,15 @@ function loop() {
 }
 
 function update() {
-	if (particles.length < 600) {
-		var typeNames = Object.keys(particleTypes);
-		var type =
-			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
-		var particle = createParticle(type);
-		particles.push(particle);
-		scene.add(particle.object);
+	if (lockedIn) {
+		if (particles.length < 600) {
+			var typeNames = Object.keys(particleTypes);
+			var type =
+				particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
+			var particle = createParticle(type);
+			particles.push(particle);
+			scene.add(particle.object);
+		}
 	}
 
 	particles.forEach(updateParticle);

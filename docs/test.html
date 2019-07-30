@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link rel="stylesheet" href="main.css"/>
-    <script src="lib/three.js"></script>
-    <script src="lib/DeviceOrientationControls.js"></script>
-    <script src="main.js"></script>
-  </head>
-  <body>
-    <div id="mainScreen">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="canvas"></video>
-    </div>
-    <div id="titleScreen">
-      <button id="startButton" autofocus>Start</button>
-      <div class="footnote">*requires camera access</div>
-    </div>
-  </body>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="main.css" />
+		<script src="lib/three.js"></script>
+		<script src="lib/DeviceOrientationControls.js"></script>
+		<script src="main.js"></script>
+	</head>
+	<body>
+		<div id="mainScreen">
+			<video id="video" autoplay muted playsinline></video>
+			<canvas id="canvas"></canvas>
+			<div id="hud">
+				<div class="viewfinder"></div>
+				<div class="instruction">
+					Stand&nbsp;back, align&nbsp;the&nbsp;piece inside&nbsp;the&nbsp;frame,
+					then&nbsp;tap&nbsp;it!
+				</div>
+			</div>
+		</div>
+		<div id="titleScreen">
+			<button id="startButton" autofocus>Start</button>
+			<div class="footnote">*requires camera access</div>
+		</div>
+	</body>
 </html>
