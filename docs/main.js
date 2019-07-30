@@ -24,6 +24,7 @@ var paintingNormal;
 var ring1;
 var ring2;
 var ring3;
+var ring4;
 
 var particles = [];
 
@@ -285,32 +286,85 @@ function lockIn() {
 	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 	ring1 = new THREE.Mesh(
-		new THREE.RingGeometry(1, 4, 32),
-		new THREE.MeshBasicMaterial({ color: 0xe8e8ee })
+		new THREE.RingGeometry(0.4, 4, 32),
+		new THREE.MeshBasicMaterial({ color: 0x2d475e })
 	);
-	ring1.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.2);
+	ring1.position
+		.copy(paintingPosition)
+		.addScaledVector(paintingNormal, 0.2)
+		.add({
+			x: Math.random() * 1 - 0.5,
+			y: Math.random() * 1 - 0.5,
+			z: Math.random() * 1 - 0.5
+		});
 	ring1.lookAt(camera.position);
+	ring1.rotateOnAxis(
+		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
+		(Math.random() * Math.PI) / 4 - Math.PI / 8
+	);
 	ring1.scale.set(0.1, 0.1, 0.1);
 
 	ring2 = new THREE.Mesh(
-		new THREE.RingGeometry(1, 3, 32),
-		new THREE.MeshBasicMaterial({ color: 0xe0e4ad })
+		new THREE.RingGeometry(0.3, 3, 32),
+		new THREE.MeshBasicMaterial({ color: 0xbb5b85 })
 	);
-	ring2.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.1);
+	ring2.position
+		.copy(paintingPosition)
+		.addScaledVector(paintingNormal, 0.15)
+		.add({
+			x: Math.random() * 1 - 0.5,
+			y: Math.random() * 1 - 0.5,
+			z: Math.random() * 1 - 0.5
+		});
 	ring2.lookAt(camera.position);
+	ring2.rotateOnAxis(
+		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
+		(Math.random() * Math.PI) / 4 - Math.PI / 8
+	);
 	ring2.scale.set(0.1, 0.1, 0.1);
 
 	ring3 = new THREE.Mesh(
-		new THREE.RingGeometry(1, 2, 32),
+		new THREE.RingGeometry(0.2, 2, 32),
 		new THREE.MeshBasicMaterial({ color: 0xddd359 })
 	);
-	ring3.position.copy(paintingPosition);
+	ring3.position
+		.copy(paintingPosition)
+		.addScaledVector(paintingNormal, 0.1)
+		.add({
+			x: Math.random() * 1 - 0.5,
+			y: Math.random() * 1 - 0.5,
+			z: Math.random() * 1 - 0.5
+		});
 	ring3.lookAt(camera.position);
+	ring3.rotateOnAxis(
+		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
+		(Math.random() * Math.PI) / 4 - Math.PI / 8
+	);
 	ring3.scale.set(0.1, 0.1, 0.1);
+
+	ring4 = new THREE.Mesh(
+		new THREE.RingGeometry(0.1, 1, 32),
+		new THREE.MeshBasicMaterial({ color: 0xe8e8ee })
+	);
+	ring4.position
+		.copy(paintingPosition)
+		.addScaledVector(paintingNormal, 0.05)
+		.add({
+			x: Math.random() * 1 - 0.5,
+			y: Math.random() * 1 - 0.5,
+			z: Math.random() * 1 - 0.5
+		});
+	ring4.lookAt(camera.position);
+	ring4.rotateOnAxis(
+		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
+		(Math.random() * Math.PI) / 4 - Math.PI / 8
+	);
+	ring4.scale.set(0.1, 0.1, 0.1);
 
 	scene.add(ring1);
 	scene.add(ring2);
 	scene.add(ring3);
+	scene.add(ring4);
 
 	running = true;
 }
@@ -326,32 +380,62 @@ function loop() {
 }
 
 function update() {
+	var cameraDirection = camera.getWorldDirection(new THREE.Vector3());
+
 	if (ring1) {
-		ring1.scale.multiplyScalar(1.19);
-		ring1.position.addScaledVector(paintingNormal, 0.3);
-		if (ring1.scale.length() > 60) {
+		ring1.scale.multiplyScalar(1.18);
+		ring1.position.addScaledVector(paintingNormal, 0.2);
+		if (
+			ring1.position
+				.clone()
+				.sub(camera.position)
+				.dot(cameraDirection) < 0
+		) {
 			scene.remove(ring1);
 			ring1 = null;
 		}
 	}
 	if (ring2) {
-		ring2.scale.multiplyScalar(1.12);
+		ring2.scale.multiplyScalar(1.16);
 		ring2.position.addScaledVector(paintingNormal, 0.2);
-		if (ring2.scale.length() > 60) {
+		if (
+			ring2.position
+				.clone()
+				.sub(camera.position)
+				.dot(cameraDirection) < 0
+		) {
 			scene.remove(ring2);
 			ring2 = null;
 		}
 	}
 	if (ring3) {
-		ring3.scale.multiplyScalar(1.08);
-		ring3.position.addScaledVector(paintingNormal, 0.1);
-		if (ring3.scale.length() > 60) {
+		ring3.scale.multiplyScalar(1.14);
+		ring3.position.addScaledVector(paintingNormal, 0.2);
+		if (
+			ring3.position
+				.clone()
+				.sub(camera.position)
+				.dot(cameraDirection) < 0
+		) {
 			scene.remove(ring3);
 			ring3 = null;
 		}
 	}
+	if (ring4) {
+		ring4.scale.multiplyScalar(1.12);
+		ring4.position.addScaledVector(paintingNormal, 0.2);
+		if (
+			ring4.position
+				.clone()
+				.sub(camera.position)
+				.dot(cameraDirection) < 0
+		) {
+			scene.remove(ring4);
+			ring4 = null;
+		}
+	}
 
-	var spawn = Math.ceil(10 / (time + 1));
+	var spawn = time < 30 ? 0 : Math.ceil(40 / (time - 29));
 	while (spawn > 0 && particles.length < 300) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
@@ -371,11 +455,6 @@ function update() {
 			y: Math.random() * 10 - 5,
 			z: Math.random() * 10 - 5
 		});
-		// particle.object.rotation.set(
-		// 	Math.random() * 2 * Math.PI,
-		// 	Math.random() * 2 * Math.PI,
-		// 	Math.random() * 2 * Math.PI
-		// );
 		particle.object.lookAt(camera.position);
 
 		scene.add(particle.object);
@@ -393,10 +472,27 @@ function updateParticle(particle) {
 
 	particle.object.position.add(particle.velocity);
 	particle.object.scale.set(
-		(particle.object.scale.x * 0.9 + 1 * 0.1),
-		(particle.object.scale.y * 0.9 + 1 * 0.1),
-		(particle.object.scale.z * 0.9 + 1 * 0.1)
+		particle.object.scale.x * 0.9 + 1 * 0.1,
+		particle.object.scale.y * 0.9 + 1 * 0.1,
+		particle.object.scale.z * 0.9 + 1 * 0.1
 	);
+
+	particle.object
+		.rotateX(0.01)
+		.rotateY(0.02)
+		.rotateZ(0.03);
+
+	var orbitRadius = particle.object.position
+		.clone()
+		.sub(camera.position)
+		.applyAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI / 4)
+		.normalize();
+	var dir = camera.position
+		.clone()
+		.sub(particle.object.position)
+		.addScaledVector(orbitRadius, 20);
+	particle.velocity.addScaledVector(dir, 0.01);
+	particle.velocity.multiplyScalar(0.998);
 }
 
 function createParticle(type) {
