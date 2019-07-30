@@ -497,7 +497,7 @@ function updateParticle(particle) {
 	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
 	particle.object.quaternion.slerp(tmpQuaternion, 0.0008);
 
-	var altitude = Math.pow(Math.sin(particle.id + time * 0.004), 2);
+	var altitude = Math.pow(Math.sin(particle.id + time * 0.004), 3);
 	var orbitRadius = particle.object.position
 		.clone()
 		.setY(camera.position.y)
