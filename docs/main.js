@@ -28,6 +28,10 @@ var ring4;
 
 var particles = [];
 
+var tmpVector3 = new THREE.Vector3();
+var tmpMatrix4 = new THREE.Matrix4();
+var tmpQuaternion = new THREE.Quaternion();
+
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
 
 function randomPalette() {
@@ -179,7 +183,7 @@ var particleTypes = {
 
 	tablet: function(colors) {
 		var bodyMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(1, 0.04, 1),
+			new THREE.BoxGeometry(1, 1, 0.04),
 			new THREE.MeshLambertMaterial({ color: colors[0] })
 		);
 
@@ -189,7 +193,7 @@ var particleTypes = {
 			new THREE.MeshLambertMaterial({ color: colors[1] })
 		);
 
-		screenMesh.position.z = -0.01;
+		screenMesh.rotation.x = Math.PI / 2;
 		bodyMesh.add(screenMesh);
 
 		return {
@@ -267,7 +271,8 @@ function start() {
 		1000
 	);
 
-	controls = new THREE.DeviceOrientationControls(camera);
+	// controls = new THREE.DeviceOrientationControls(camera);
+	camera.rotation.set(0, Math.PI / 2, 0);
 
 	renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -279,7 +284,7 @@ function start() {
 function lockIn() {
 	hud.style.display = 'none';
 
-	var cameraDirection = camera.getWorldDirection(new THREE.Vector3());
+	var cameraDirection = camera.getWorldDirection(tmpVector3);
 	paintingPosition = camera.position
 		.clone()
 		.addScaledVector(cameraDirection, 30);
@@ -374,13 +379,13 @@ function loop() {
 		update();
 	}
 
-	controls.update();
+	// controls.update();
 	renderer.render(scene, camera);
 	requestAnimationFrame(loop);
 }
 
 function update() {
-	var cameraDirection = camera.getWorldDirection(new THREE.Vector3());
+	var cameraDirection = camera.getWorldDirection(tmpVector3);
 
 	if (ring1) {
 		ring1.scale.multiplyScalar(1.18);
@@ -435,8 +440,8 @@ function update() {
 		}
 	}
 
-	var spawn = time < 40 ? 0 : Math.ceil(20 / (time - 39));
-	while (spawn > 0 && particles.length < 100) {
+	var spawn = time < 30 ? 0 : Math.ceil(16 / (time - 30 + 1));
+	while (spawn > 0 && particles.length < 200) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
@@ -446,7 +451,7 @@ function update() {
 			Math.random() * 0.3 - 0.15,
 			Math.random() * 0.3 - 0.15,
 			Math.random() * 0.3 - 0.15
-		).addScaledVector(paintingNormal, 0.3);
+		).addScaledVector(paintingNormal, 1);
 
 		particle.object.scale.set(0, 0, 0);
 
@@ -471,33 +476,58 @@ function updateParticle(particle) {
 	particle.update();
 
 	particle.object.position.add(particle.velocity);
+
 	particle.object.scale.set(
-		particle.object.scale.x * 0.9 + 1 * 0.1,
-		particle.object.scale.y * 0.9 + 1 * 0.1,
-		particle.object.scale.z * 0.9 + 1 * 0.1
+		particle.object.scale.x * 0.6 + 1 * 0.4,
+		particle.object.scale.y * 0.6 + 1 * 0.4,
+		particle.object.scale.z * 0.6 + 1 * 0.4
 	);
 
-	particle.object
-		.rotateX(0.01)
-		.rotateY(0.02)
-		.rotateZ(0.03);
+	if (particle.id % 4 < 3) {
+		particle.object
+			.rotateX(((particle.id % 10) / 10) * 0.04 - 0.02)
+			.rotateY((((particle.id * 3) % 10) / 10) * 0.04 - 0.02)
+			.rotateZ((((particle.id * 7) % 10) / 10) * 0.04 - 0.02);
+	}
+
+	tmpMatrix4.lookAt(
+		particle.object.position,
+		camera.position,
+		particle.object.getWorldDirection(tmpVector3)
+	);
+	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
+	particle.object.quaternion.slerp(
+		tmpQuaternion,
+		0.0008
+	);
 
 	var orbitRadius = particle.object.position
 		.clone()
 		.sub(camera.position)
-		.applyAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI / 4)
+		.applyAxisAngle(
+			{ x: 0, y: 1, z: 0 },
+			(particle.id % 2) * Math.PI - Math.PI / 2
+		)
 		.normalize();
 	var dir = camera.position
 		.clone()
+		.add({ x: 0, y: Math.sin((time + particle.id * 709) * 0.001) * 4 + 2, z: 0 })
 		.sub(particle.object.position)
-		.addScaledVector(orbitRadius, 20);
-	particle.velocity.addScaledVector(dir, 0.004);
-	particle.velocity.multiplyScalar(0.998);
+		.addScaledVector(
+			orbitRadius,
+			6 + 2 * ((particle.id % 12) / 12) + 70 / (time + 60)
+		);
+	particle.velocity.addScaledVector(
+		dir,
+		0.0001 + ((particle.id % 10) / 10) * 0.001
+	);
+	particle.velocity.multiplyScalar(0.97);
 }
 
 function createParticle(type) {
 	var colors = pickRandomColors(randomPalette(), 2);
 	var particle = type(colors);
+	particle.id = particles.length;
 	particles.push(particle);
 	return particle;
 }
