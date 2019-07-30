@@ -271,8 +271,8 @@ function start() {
 		1000
 	);
 
-	// controls = new THREE.DeviceOrientationControls(camera);
-	camera.rotation.set(0, Math.PI / 2, 0);
+	controls = new THREE.DeviceOrientationControls(camera);
+	// camera.rotation.set(0, Math.PI / 2, 0);
 
 	renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -379,7 +379,7 @@ function loop() {
 		update();
 	}
 
-	// controls.update();
+	controls.update();
 	renderer.render(scene, camera);
 	requestAnimationFrame(loop);
 }
