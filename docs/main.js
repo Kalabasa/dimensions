@@ -53,9 +53,8 @@ function pickRandomColors(palette, number) {
 	}
 }
 
-// should've been using OOP but here we are
-var particleTypes = {
-	paper: function(colors) {
+var geometries = {
+	paperBody: (function() {
 		var bodyShape = new THREE.Shape();
 		bodyShape.moveTo(-0.5, -0.5);
 		bodyShape.lineTo(0, -0.5);
@@ -63,26 +62,98 @@ var particleTypes = {
 		bodyShape.lineTo(0.5, 0.5);
 		bodyShape.lineTo(-0.5, 0.5);
 
-		var bodyMesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(bodyShape, {
-				depth: 0.04,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
-			new THREE.MeshLambertMaterial({ color: colors[0] })
-		);
+		return new THREE.ExtrudeBufferGeometry(bodyShape, {
+			depth: 0.04,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
 
+	paperFlap: (function() {
 		var flapShape = new THREE.Shape();
 		flapShape.moveTo(0, -0.51);
 		flapShape.arc(0, 0.51, 0.51, -Math.PI / 2, 0);
 		flapShape.arc(0, -0.51, 0.51, Math.PI / 2, Math.PI);
 
+		return new THREE.ExtrudeBufferGeometry(flapShape, {
+			depth: 0.06,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
+
+	pencilBody: (function() {
+		var bodyShape = new THREE.Shape();
+		bodyShape.moveTo(-0.5, -0.5);
+		bodyShape.arc(0, 0, 1, 0, Math.PI / 2);
+		bodyShape.lineTo(-0.5, -0.5);
+
+		return new THREE.ExtrudeBufferGeometry(bodyShape, {
+			depth: 0.04,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
+
+	pencilTip: (function() {
+		var tipShape = new THREE.Shape();
+		tipShape.moveTo(-0.51, -0.51);
+		tipShape.arc(0, 0, 0.51, 0, Math.PI / 2);
+		tipShape.lineTo(-0.51, -0.51);
+
+		return new THREE.ExtrudeBufferGeometry(tipShape, {
+			depth: 0.06,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
+
+	pen: (function() {
+		var shape = new THREE.Shape();
+		shape.moveTo(0, -0.5);
+		shape.arc(0.5, 0, 0.5, Math.PI, Math.PI / 2, true);
+		shape.lineTo(0.5, 0.5);
+		shape.lineTo(-0.5, 0.5);
+		shape.lineTo(-0.5, 0);
+		shape.arc(0, -0.5, 0.5, Math.PI / 2, 0, true);
+
+		return new THREE.ExtrudeBufferGeometry(shape, {
+			depth: 0.05,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
+
+	brush: (function() {
+		var shape = new THREE.Shape();
+		shape.moveTo(0, -0.5);
+		shape.arc(0, 0.5, 0.5, -Math.PI / 2, 0, false);
+		shape.arc(0, 0.5, 0.5, -Math.PI / 2, -Math.PI, true);
+		shape.lineTo(-0.5, 0.5);
+		shape.lineTo(-0.5, 0);
+		shape.arc(0.5, 0, 0.5, -Math.PI, -Math.PI / 2);
+
+		return new THREE.ExtrudeBufferGeometry(shape, {
+			depth: 0.05,
+			curveSegments: 4,
+			bevelEnabled: false
+		});
+	})(),
+
+	tabletBody: new THREE.BoxBufferGeometry(1, 1, 0.04),
+	tabletScreen: new THREE.CylinderBufferGeometry(0.49, 0.49, 0.06, 16, 1)
+};
+
+// should've been using OOP but here we are
+var particleTypes = {
+	paper: function(colors) {
+		var bodyMesh = new THREE.Mesh(
+			geometries.paperBody,
+			new THREE.MeshLambertMaterial({ color: colors[0] })
+		);
+
 		var flapMesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(flapShape, {
-				depth: 0.06,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
+			geometries.paperFlap,
 			new THREE.MeshLambertMaterial({ color: colors[1] })
 		);
 
@@ -96,31 +167,13 @@ var particleTypes = {
 	},
 
 	pencil: function(colors) {
-		var bodyShape = new THREE.Shape();
-		bodyShape.moveTo(-0.5, -0.5);
-		bodyShape.arc(0, 0, 1, 0, Math.PI / 2);
-		bodyShape.lineTo(-0.5, -0.5);
-
 		var bodyMesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(bodyShape, {
-				depth: 0.04,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
+			geometries.paperBody,
 			new THREE.MeshLambertMaterial({ color: colors[0] })
 		);
 
-		var tipShape = new THREE.Shape();
-		tipShape.moveTo(-0.51, -0.51);
-		tipShape.arc(0, 0, 0.51, 0, Math.PI / 2);
-		tipShape.lineTo(-0.51, -0.51);
-
 		var tipMesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(tipShape, {
-				depth: 0.06,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
+			geometries.pencilTip,
 			new THREE.MeshLambertMaterial({ color: colors[1] })
 		);
 
@@ -134,20 +187,8 @@ var particleTypes = {
 	},
 
 	pen: function(colors) {
-		var shape = new THREE.Shape();
-		shape.moveTo(0, -0.5);
-		shape.arc(0.5, 0, 0.5, Math.PI, Math.PI / 2, true);
-		shape.lineTo(0.5, 0.5);
-		shape.lineTo(-0.5, 0.5);
-		shape.lineTo(-0.5, 0);
-		shape.arc(0, -0.5, 0.5, Math.PI / 2, 0, true);
-
 		var mesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(shape, {
-				depth: 0.05,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
+			geometries.pen,
 			new THREE.MeshLambertMaterial({ color: colors[0] })
 		);
 
@@ -158,20 +199,8 @@ var particleTypes = {
 	},
 
 	brush: function(colors) {
-		var shape = new THREE.Shape();
-		shape.moveTo(0, -0.5);
-		shape.arc(0, 0.5, 0.5, -Math.PI / 2, 0, false);
-		shape.arc(0, 0.5, 0.5, -Math.PI / 2, -Math.PI, true);
-		shape.lineTo(-0.5, 0.5);
-		shape.lineTo(-0.5, 0);
-		shape.arc(0.5, 0, 0.5, -Math.PI, -Math.PI / 2);
-
 		var mesh = new THREE.Mesh(
-			new THREE.ExtrudeGeometry(shape, {
-				depth: 0.05,
-				curveSegments: 4,
-				bevelEnabled: false
-			}),
+			geometries.brush,
 			new THREE.MeshLambertMaterial({ color: colors[0] })
 		);
 
@@ -183,13 +212,12 @@ var particleTypes = {
 
 	tablet: function(colors) {
 		var bodyMesh = new THREE.Mesh(
-			new THREE.BoxGeometry(1, 1, 0.04),
+			geometries.tabletBody,
 			new THREE.MeshLambertMaterial({ color: colors[0] })
 		);
 
 		var screenMesh = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.49, 0.49, 0.06, 16, 1),
-
+			geometries.tabletScreen,
 			new THREE.MeshLambertMaterial({ color: colors[1] })
 		);
 
@@ -439,7 +467,7 @@ function update() {
 		}
 	}
 
-	var spawn = (time >= 30 && Math.random() < (0.1 + 1 / time)) ? 1 : 0;
+	var spawn = time >= 30 && Math.random() < 0.1 + 1 / time ? 1 : 0;
 	while (spawn > 0 && particles.length < 60) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
@@ -497,37 +525,51 @@ function updateParticle(particle) {
 	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
 	particle.object.quaternion.slerp(tmpQuaternion, 0.0008);
 
-	var altitude = Math.pow(Math.sin(particle.id + time * 0.004), 3);
+	var altitude = computeAltitude(particle);
 	var orbitRadius = particle.object.position
 		.clone()
 		.setY(camera.position.y)
 		.sub(camera.position)
 		.applyAxisAngle(
 			{ x: 0, y: 1, z: 0 },
-			(particle.id % 2) * Math.PI - Math.PI / 2
+			((particle.id % 3 === 0) * Math.PI) / 2 - Math.PI / 4
 		)
 		.normalize();
 	var dir = camera.position
 		.clone()
 		.setY(
 			particle.object.position.y * 0.2 +
-				(camera.position.y + altitude * 26) * 0.8
+				(camera.position.y + altitude * 28 + 4) * 0.8
 		)
 		.sub(particle.object.position)
 		.addScaledVector(
 			orbitRadius,
-			30 + 8 * ((particle.id % 12) / 12) + 70 / (time + 60)
+			10 +
+				20 * ((particle.id % 12) / 12) +
+				700 / (time + 60) +
+				200 / (Math.abs(altitude) * 200 + 1)
 		)
 		.normalize();
 	particle.velocity.addScaledVector(
 		dir,
 		((0.03 + ((particle.id % 10) / 10) * 0.01) * 4) /
-			(Math.abs(altitude) * 16 + 4)
+			(9 - Math.abs(altitude) * 8)
 	);
 	particle.velocity.multiplyScalar(0.97);
 
-	particle.trail.advance();
-	particle.trail.updateHead();
+	if (particle.object.position.distanceTo(particle.lastTrailAdvance) > 5) {
+		particle.trail.advance();
+		particle.lastTrailAdvance.copy(particle.object.position);
+	} else {
+		particle.trail.updateHead();
+	}
+}
+
+function computeAltitude(particle) {
+	// smooth triangle wave
+	return (
+		1 - (2 * Math.acos(0.99 * Math.sin(particle.id + time * 0.004))) / Math.PI
+	);
 }
 
 function createParticle(type) {
@@ -542,6 +584,7 @@ function createParticle(type) {
 		new THREE.Vector3(0.5, 0.0, 0.0)
 	);
 
+	particle.lastTrailAdvance = new THREE.Vector3();
 	particle.trail = new THREE.TrailRenderer(scene, false);
 
 	var trailMaterial = THREE.TrailRenderer.createBaseMaterial();
@@ -566,7 +609,7 @@ function createParticle(type) {
 		1
 	);
 
-	var trailLength = 200;
+	var trailLength = 20;
 
 	particle.trail.initialize(
 		trailMaterial,
@@ -577,6 +620,7 @@ function createParticle(type) {
 		particle.object
 	);
 	particle.trail.activate();
+	particle.trail.advance();
 
 	particle.id = particles.length;
 	particles.push(particle);
