@@ -1,18 +1,36 @@
 var palettes = {
-	paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e, 0xddd359],
-	paletteWarm: [0x132141, 0x4d2b52, 0xbb5b85, 0xe0e4ad],
-	paletteMid: [0x4b5a67, 0xffd02d, 0xf8dd85, 0xf3f5ca]
+	paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e],
+	paletteWarm: [0x4d2b52, 0xbb5b85, 0xe0e4ad],
+	paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 };
 
+var mainScreen;
+var titleScreen;
+var video;
+var canvas;
+var startButton;
+var scene;
+var camera;
+var controls;
+var renderer;
+
+var particles = [];
+
+document.addEventListener('DOMContentLoaded', onDocumentLoad);
+
 function randomPalette() {
-	return Object.values(palettes)[Math.floor(Math.random() * Object.keys(palettes).length)];
+	return Object.values(palettes)[
+		Math.floor(Math.random() * Object.keys(palettes).length)
+	];
 }
 
 function pickRandomColors(palette, number) {
 	var index = Math.floor(Math.random() * palette.length);
 	var result = [palette[index]];
 	if (number > 1) {
-		var rest = palette.slice(0, index).concat(palette.slice(index + 1, palette.length));
+		var rest = palette
+			.slice(0, index)
+			.concat(palette.slice(index + 1, palette.length));
 		return pickRandomColors(rest, number - 1).concat(result);
 	} else {
 		return result;
@@ -169,18 +187,18 @@ var particleTypes = {
 	}
 };
 
-var video;
-var scene;
-var camera;
-var controls;
-var renderer;
-
-var particles = [];
-
-document.addEventListener('DOMContentLoaded', onDocumentLoad);
-
 function onDocumentLoad() {
+	mainScreen = document.getElementById('mainScreen');
+	titleScreen = document.getElementById('titleScreen');
 	video = document.getElementById('video');
+	canvas = document.getElementById('canvas');
+	startButton = document.getElementById('startButton');
+
+	startButton.addEventListener('click', start);
+}
+
+function start() {
+	video.play();
 
 	var getUserMedia =
 		(navigator.mediaDevices &&
@@ -197,10 +215,16 @@ function onDocumentLoad() {
 				video: {
 					facingMode: { ideal: 'environment' }
 				}
-			}).then(function(stream) {
-				video.srcObject = stream;
-				video.play();
-			});
+			})
+				.then(function(stream) {
+					video.srcObject = stream;
+					video.play();
+					titleScreen.classList.add('hide');
+				})
+				.catch(function(error) {
+					alert('Camera access is required for this app. Please try again.');
+					location.reload();
+				});
 		} catch (error) {
 			alert(
 				'Something went wrong while getting the camera stream. Your experience may be limited.'
@@ -214,7 +238,7 @@ function onDocumentLoad() {
 
 	scene = new THREE.Scene();
 
-	light = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
+	light = new THREE.HemisphereLight(0xffffff, 0x888888, 1);
 	light.position.set(0, 100, 0);
 	scene.add(light);
 
@@ -227,11 +251,9 @@ function onDocumentLoad() {
 
 	controls = new THREE.DeviceOrientationControls(camera);
 
-	renderer = new THREE.WebGLRenderer({ alpha: true });
+	renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.setClearColor(0, 0);
-	renderer.domElement.style.position = 'absolute';
-	document.body.appendChild(renderer.domElement);
 
 	loop();
 }
@@ -259,6 +281,8 @@ function update() {
 
 function updateParticle(particle) {
 	particle.update();
+
+	particle.object.position.add(particle.velocity);
 }
 
 function createParticle(type) {
@@ -266,6 +290,13 @@ function createParticle(type) {
 
 	var particle = type(colors);
 
+	particle.velocity = new THREE.Vector3(
+		Math.random() * 0.2 - 0.1,
+		Math.random() * 0.2 - 0.1,
+		Math.random() * 0.2 - 0.1
+	);
+
+	particle.object.scale.multiplyScalar(4);
 	particle.object.position.set(
 		Math.random() * 40 - 20,
 		Math.random() * 40 - 20,
