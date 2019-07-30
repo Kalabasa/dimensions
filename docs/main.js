@@ -272,7 +272,6 @@ function start() {
 	);
 
 	controls = new THREE.DeviceOrientationControls(camera);
-	// camera.rotation.set(0, Math.PI / 2, 0);
 
 	renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -287,7 +286,7 @@ function lockIn() {
 	var cameraDirection = camera.getWorldDirection(tmpVector3);
 	paintingPosition = camera.position
 		.clone()
-		.addScaledVector(cameraDirection, 30);
+		.addScaledVector(cameraDirection, 40);
 	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 	ring1 = new THREE.Mesh(
@@ -441,16 +440,16 @@ function update() {
 	}
 
 	var spawn = time < 30 ? 0 : Math.ceil(8 / (time - 30 + 1));
-	while (spawn > 0 && particles.length < 200) {
+	while (spawn > 0 && particles.length < 300) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
 		var particle = createParticle(type);
 
 		particle.velocity = new THREE.Vector3(
-			Math.random() * 0.3 - 0.15,
-			Math.random() * 0.3 - 0.15,
-			Math.random() * 0.3 - 0.15
+			Math.random() * 0.6 - 0.3,
+			Math.random() * 0.6 - 0.3,
+			Math.random() * 0.6 - 0.3
 		).addScaledVector(paintingNormal, 1);
 
 		particle.object.scale.set(0, 0, 0);
@@ -478,9 +477,9 @@ function updateParticle(particle) {
 	particle.object.position.add(particle.velocity);
 
 	particle.object.scale.set(
-		particle.object.scale.x * 0.6 + 1 * 0.4,
-		particle.object.scale.y * 0.6 + 1 * 0.4,
-		particle.object.scale.z * 0.6 + 1 * 0.4
+		particle.object.scale.x * 0.6 + 2 * 0.4,
+		particle.object.scale.y * 0.6 + 2 * 0.4,
+		particle.object.scale.z * 0.6 + 2 * 0.4
 	);
 
 	if (particle.id % 4 < 3) {
@@ -496,13 +495,12 @@ function updateParticle(particle) {
 		particle.object.getWorldDirection(tmpVector3)
 	);
 	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
-	particle.object.quaternion.slerp(
-		tmpQuaternion,
-		0.0008
-	);
+	particle.object.quaternion.slerp(tmpQuaternion, 0.0008);
 
+	var altitude = Math.sin(particle.id + time * 0.004);
 	var orbitRadius = particle.object.position
 		.clone()
+		.setY(camera.position.y)
 		.sub(camera.position)
 		.applyAxisAngle(
 			{ x: 0, y: 1, z: 0 },
@@ -511,22 +509,77 @@ function updateParticle(particle) {
 		.normalize();
 	var dir = camera.position
 		.clone()
-		.add({ x: 0, y: Math.sin((time + particle.id * 709) * 0.001) * 4 + 2, z: 0 })
+		.setY(
+			particle.object.position.y * 0.2 +
+				(camera.position.y + altitude * 26) * 0.8
+		)
 		.sub(particle.object.position)
 		.addScaledVector(
 			orbitRadius,
-			6 + 2 * ((particle.id % 12) / 12) + 70 / (time + 60)
-		);
+			30 + 8 * ((particle.id % 12) / 12) + 70 / (time + 60)
+		)
+		.normalize();
 	particle.velocity.addScaledVector(
 		dir,
-		0.0001 + ((particle.id % 10) / 10) * 0.001
+		((0.03 + ((particle.id % 10) / 10) * 0.01) * 4) /
+			(Math.abs(altitude) * 16 + 4)
 	);
 	particle.velocity.multiplyScalar(0.97);
+
+	if (time % 6 === 0) {
+		particle.trail.advance();
+	}
+	particle.trail.updateHead();
 }
 
 function createParticle(type) {
 	var colors = pickRandomColors(randomPalette(), 2);
+
 	var particle = type(colors);
+
+	// specify points to create planar trail-head geometry
+	var trailHeadGeometry = [];
+	trailHeadGeometry.push(
+		new THREE.Vector3(-0.5, 0.0, 0.0),
+		new THREE.Vector3(0.5, 0.0, 0.0)
+	);
+
+	particle.trail = new THREE.TrailRenderer(scene, false);
+
+	var trailMaterial = THREE.TrailRenderer.createBaseMaterial();
+	var trailColor1 = colors[0];
+	var trailColor1R = ((trailColor1 >> 16) & 0xff) / 0xff;
+	var trailColor1G = ((trailColor1 >> 8) & 0xff) / 0xff;
+	var trailColor1B = (trailColor1 & 0xff) / 0xff;
+	var trailColor2 = colors[1];
+	var trailColor2R = ((trailColor2 >> 16) & 0xff) / 0xff;
+	var trailColor2G = ((trailColor2 >> 8) & 0xff) / 0xff;
+	var trailColor2B = (trailColor2 & 0xff) / 0xff;
+	trailMaterial.uniforms.headColor.value.set(
+		trailColor1R,
+		trailColor1G,
+		trailColor1B,
+		1
+	);
+	trailMaterial.uniforms.tailColor.value.set(
+		trailColor2R,
+		trailColor2G,
+		trailColor2B,
+		1
+	);
+
+	var trailLength = 16;
+
+	particle.trail.initialize(
+		trailMaterial,
+		trailLength,
+		false,
+		0,
+		trailHeadGeometry,
+		particle.object
+	);
+	particle.trail.activate();
+
 	particle.id = particles.length;
 	particles.push(particle);
 	return particle;
