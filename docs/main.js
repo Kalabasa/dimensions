@@ -289,7 +289,7 @@ function lockIn() {
 		new THREE.MeshBasicMaterial({ color: 0xe8e8ee })
 	);
 	ring1.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.2);
-	ring1.rotation.set(-Math.PI / 2, 0, 0);
+	ring1.lookAt(camera.position);
 	ring1.scale.set(0.1, 0.1, 0.1);
 
 	ring2 = new THREE.Mesh(
@@ -297,7 +297,7 @@ function lockIn() {
 		new THREE.MeshBasicMaterial({ color: 0xe0e4ad })
 	);
 	ring2.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.1);
-	ring2.rotation.set(-Math.PI / 2, 0, 0);
+	ring2.lookAt(camera.position);
 	ring2.scale.set(0.1, 0.1, 0.1);
 
 	ring3 = new THREE.Mesh(
@@ -305,7 +305,7 @@ function lockIn() {
 		new THREE.MeshBasicMaterial({ color: 0xddd359 })
 	);
 	ring3.position.copy(paintingPosition);
-	ring3.rotation.set(-Math.PI / 2, 0, 0);
+	ring3.lookAt(camera.position);
 	ring3.scale.set(0.1, 0.1, 0.1);
 
 	scene.add(ring1);
