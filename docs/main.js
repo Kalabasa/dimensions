@@ -435,8 +435,8 @@ function update() {
 		}
 	}
 
-	var spawn = time < 30 ? 0 : Math.ceil(40 / (time - 29));
-	while (spawn > 0 && particles.length < 300) {
+	var spawn = time < 40 ? 0 : Math.ceil(20 / (time - 39));
+	while (spawn > 0 && particles.length < 100) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
