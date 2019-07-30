@@ -491,7 +491,7 @@ function updateParticle(particle) {
 		.clone()
 		.sub(particle.object.position)
 		.addScaledVector(orbitRadius, 20);
-	particle.velocity.addScaledVector(dir, 0.01);
+	particle.velocity.addScaledVector(dir, 0.004);
 	particle.velocity.multiplyScalar(0.998);
 }
 
