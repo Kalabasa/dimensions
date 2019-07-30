@@ -1,6 +1,6 @@
 var palettes = {
 	paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e],
-	paletteWarm: [0x4d2b52, 0xbb5b85, 0xe0e4ad],
+	paletteWarm: [0x4d2b52, 0xbb5b85],
 	paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 };
 
@@ -16,7 +16,10 @@ var camera;
 var controls;
 var renderer;
 
-var lockedIn = false;
+var time = 0;
+var running = false;
+var paintingPosition = new THREE.Vector3();
+var paintingNormal = new THREE.Vector3();
 var particles = [];
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
@@ -203,6 +206,10 @@ function onDocumentLoad() {
 }
 
 function start() {
+	if (scene) {
+		return;
+	}
+
 	video.play();
 
 	var getUserMedia =
@@ -264,13 +271,17 @@ function start() {
 }
 
 function lockIn() {
-	lockedIn = true;
-
 	hud.style.display = 'none';
+	running = true;
+
+	var cameraDirection = camera.getWorldDirection(new THREE.Vector3());
+	// paintingPosition = camera.position.clone().
 }
 
 function loop() {
-	update();
+	if (running) {
+		update();
+	}
 
 	controls.update();
 	renderer.render(scene, camera);
@@ -278,18 +289,18 @@ function loop() {
 }
 
 function update() {
-	if (lockedIn) {
-		if (particles.length < 600) {
-			var typeNames = Object.keys(particleTypes);
-			var type =
-				particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
-			var particle = createParticle(type);
-			particles.push(particle);
-			scene.add(particle.object);
-		}
+	if (particles.length < 600) {
+		var typeNames = Object.keys(particleTypes);
+		var type =
+			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
+		var particle = createParticle(type);
+		particles.push(particle);
+		scene.add(particle.object);
 	}
 
 	particles.forEach(updateParticle);
+
+	time++;
 }
 
 function updateParticle(particle) {
