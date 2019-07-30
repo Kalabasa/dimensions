@@ -18,8 +18,13 @@ var renderer;
 
 var time = 0;
 var running = false;
-var paintingPosition = new THREE.Vector3();
-var paintingNormal = new THREE.Vector3();
+var paintingPosition;
+var paintingNormal;
+
+var ring1;
+var ring2;
+var ring3;
+
 var particles = [];
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
@@ -272,10 +277,42 @@ function start() {
 
 function lockIn() {
 	hud.style.display = 'none';
-	running = true;
 
 	var cameraDirection = camera.getWorldDirection(new THREE.Vector3());
-	// paintingPosition = camera.position.clone().
+	paintingPosition = camera.position
+		.clone()
+		.addScaledVector(cameraDirection, 30);
+	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
+
+	ring1 = new THREE.Mesh(
+		new THREE.RingGeometry(1, 4, 32),
+		new THREE.MeshBasicMaterial({ color: 0xe8e8ee })
+	);
+	ring1.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.2);
+	ring1.rotation.set(-Math.PI / 2, 0, 0);
+	ring1.scale.set(0.1, 0.1, 0.1);
+
+	ring2 = new THREE.Mesh(
+		new THREE.RingGeometry(1, 3, 32),
+		new THREE.MeshBasicMaterial({ color: 0xe0e4ad })
+	);
+	ring2.position.copy(paintingPosition).addScaledVector(paintingNormal, 0.1);
+	ring2.rotation.set(-Math.PI / 2, 0, 0);
+	ring2.scale.set(0.1, 0.1, 0.1);
+
+	ring3 = new THREE.Mesh(
+		new THREE.RingGeometry(1, 2, 32),
+		new THREE.MeshBasicMaterial({ color: 0xddd359 })
+	);
+	ring3.position.copy(paintingPosition);
+	ring3.rotation.set(-Math.PI / 2, 0, 0);
+	ring3.scale.set(0.1, 0.1, 0.1);
+
+	scene.add(ring1);
+	scene.add(ring2);
+	scene.add(ring3);
+
+	running = true;
 }
 
 function loop() {
@@ -289,13 +326,61 @@ function loop() {
 }
 
 function update() {
-	if (particles.length < 600) {
+	if (ring1) {
+		ring1.scale.multiplyScalar(1.19);
+		ring1.position.addScaledVector(paintingNormal, 0.3);
+		if (ring1.scale.length() > 60) {
+			scene.remove(ring1);
+			ring1 = null;
+		}
+	}
+	if (ring2) {
+		ring2.scale.multiplyScalar(1.12);
+		ring2.position.addScaledVector(paintingNormal, 0.2);
+		if (ring2.scale.length() > 60) {
+			scene.remove(ring2);
+			ring2 = null;
+		}
+	}
+	if (ring3) {
+		ring3.scale.multiplyScalar(1.08);
+		ring3.position.addScaledVector(paintingNormal, 0.1);
+		if (ring3.scale.length() > 60) {
+			scene.remove(ring3);
+			ring3 = null;
+		}
+	}
+
+	var spawn = Math.ceil(10 / (time + 1));
+	while (spawn > 0 && particles.length < 300) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
 		var particle = createParticle(type);
-		particles.push(particle);
+
+		particle.velocity = new THREE.Vector3(
+			Math.random() * 0.3 - 0.15,
+			Math.random() * 0.3 - 0.15,
+			Math.random() * 0.3 - 0.15
+		).addScaledVector(paintingNormal, 0.3);
+
+		particle.object.scale.set(0, 0, 0);
+
+		particle.object.position.copy(paintingPosition).add({
+			x: Math.random() * 10 - 5,
+			y: Math.random() * 10 - 5,
+			z: Math.random() * 10 - 5
+		});
+		// particle.object.rotation.set(
+		// 	Math.random() * 2 * Math.PI,
+		// 	Math.random() * 2 * Math.PI,
+		// 	Math.random() * 2 * Math.PI
+		// );
+		particle.object.lookAt(camera.position);
+
 		scene.add(particle.object);
+
+		spawn--;
 	}
 
 	particles.forEach(updateParticle);
@@ -307,30 +392,16 @@ function updateParticle(particle) {
 	particle.update();
 
 	particle.object.position.add(particle.velocity);
+	particle.object.scale.set(
+		(particle.object.scale.x * 0.9 + 1 * 0.1),
+		(particle.object.scale.y * 0.9 + 1 * 0.1),
+		(particle.object.scale.z * 0.9 + 1 * 0.1)
+	);
 }
 
 function createParticle(type) {
 	var colors = pickRandomColors(randomPalette(), 2);
-
 	var particle = type(colors);
-
-	particle.velocity = new THREE.Vector3(
-		Math.random() * 0.2 - 0.1,
-		Math.random() * 0.2 - 0.1,
-		Math.random() * 0.2 - 0.1
-	);
-
-	particle.object.scale.multiplyScalar(4);
-	particle.object.position.set(
-		Math.random() * 40 - 20,
-		Math.random() * 40 - 20,
-		Math.random() * 40 - 20
-	);
-	particle.object.rotation.set(
-		Math.random() * 2 * Math.PI,
-		Math.random() * 2 * Math.PI,
-		Math.random() * 2 * Math.PI
-	);
-
+	particles.push(particle);
 	return particle;
 }
