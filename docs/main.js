@@ -6,6 +6,8 @@ var palettes = {
 
 var maxParticleCount = 60;
 
+var videoFPS = 24;
+
 var mainScreen;
 var titleScreen;
 var video;
@@ -286,15 +288,18 @@ function start() {
 				}
 			})
 				.then(function(stream) {
+					titleScreen.classList.add('hide');
 					video.srcObject = stream;
 					video.play();
-					titleScreen.classList.add('hide');
+					videoFPS = stream.getVideoTracks()[0].getSettings().frameRate;
 				})
 				.catch(function(error) {
+					console.error(error);
 					alert('Camera access is required for this app. Please try again.');
 					location.reload();
 				});
-		} catch (error) {
+			} catch (error) {
+			console.error(error);
 			alert(
 				'Something went wrong while getting the camera stream. Your experience may be limited.'
 			);
@@ -319,7 +324,7 @@ function start() {
 	);
 	cameraPole = new THREE.Object3D();
 	cameraPole.position.set(0, 0, 0);
-	camera.position.set(0, 0, 4);
+	camera.position.set(0, 0, 8);
 	cameraPole.add(camera);
 	scene.add(cameraPole);
 
@@ -338,7 +343,7 @@ function launch() {
 	var cameraDirection = camera.getWorldDirection(tmpVector3);
 	paintingPosition = cameraPole.position
 		.clone()
-		.addScaledVector(cameraDirection, 44);
+		.addScaledVector(cameraDirection, 60);
 	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 	ring1 = new THREE.Mesh(
@@ -409,6 +414,9 @@ function launch() {
 	launched = true;
 }
 
+var clock = new THREE.Clock();
+var delta = 0;
+
 function loop() {
 	framesSinceStart++;
 
@@ -416,12 +424,17 @@ function loop() {
 		update();
 	}
 
-	if (framesSinceStart % 6 === 0) {
+	controls.update();
+
+	delta += clock.getDelta();
+	var interval = 1 / videoFPS;
+	if (delta > interval) {
 		updateLighting();
+		renderer.render(scene, camera);
+
+		delta = delta % interval;
 	}
 
-	controls.update();
-	renderer.render(scene, camera);
 	requestAnimationFrame(loop);
 }
 
@@ -511,7 +524,7 @@ function update() {
 	}
 
 	var spawn =
-		framesSinceLaunch >= 30 && Math.random() < 0.1 + 15 / framesSinceLaunch
+		framesSinceLaunch >= 24 && Math.random() < 0.1 + 9 / framesSinceLaunch
 			? 1
 			: 0;
 	while (spawn > 0 && particles.length < maxParticleCount) {
@@ -521,10 +534,10 @@ function update() {
 		var particle = createParticle(type);
 
 		particle.velocity = new THREE.Vector3(
-			Math.random() * 0.6 - 0.3,
-			Math.random() * 0.6 - 0.3,
-			Math.random() * 0.6 - 0.3
-		).addScaledVector(paintingNormal, 1);
+			Math.random() * 1.5 - 0.75,
+			Math.random() * 1.5 - 0.75,
+			Math.random() * 1.5 - 0.75
+		).addScaledVector(paintingNormal, 2);
 
 		particle.object.scale.set(0, 0, 0);
 
@@ -591,17 +604,16 @@ function updateParticle(particle) {
 		.addScaledVector(
 			orbitRadius,
 			10 +
-				20 * ((particle.id % 12) / 12) +
-				700 / (framesSinceLaunch + 60) +
+				60 * ((particle.id % 12) / 12) +
+				1200 / (framesSinceLaunch + 60) +
 				200 / (Math.abs(altitude) * 200 + 1)
 		)
 		.normalize();
 	particle.velocity.addScaledVector(
 		dir,
-		((0.03 + ((particle.id % 10) / 10) * 0.01) * 4) /
-			(9 - Math.abs(altitude) * 8)
+		(0.08 + ((particle.id % 10) / 10) * 0.04) / (9 - Math.abs(altitude) * 8)
 	);
-	particle.velocity.multiplyScalar(0.97);
+	particle.velocity.multiplyScalar(0.966);
 
 	setTrailColor(particle.trail, particle.colors[0]);
 	if (particle.object.position.distanceTo(particle.lastTrailAdvance) > 5) {
@@ -641,7 +653,7 @@ function createParticle(type) {
 	trailMaterial.uniforms.headColor.value.set(1, 1, 1, 1);
 	trailMaterial.uniforms.tailColor.value.set(1, 1, 1, 1);
 
-	var trailLength = 20;
+	var trailLength = 30;
 
 	particle.trail.initialize(
 		trailMaterial,
