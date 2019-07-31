@@ -403,7 +403,7 @@ function loop() {
 		update();
 	}
 
-	if (framesSinceStart % 20 === 0) {
+	if (framesSinceStart % 6 === 0) {
 		updateLighting();
 	}
 
@@ -413,14 +413,14 @@ function loop() {
 }
 
 function updateLighting() {
-	videoWorkCanvas.width = 100;
-	videoWorkCanvas.height = 100;
+	videoWorkCanvas.width = 256;
+	videoWorkCanvas.height = 256;
 	var context = videoWorkCanvas.getContext('2d');
 	context.drawImage(video, 0, 0, videoWorkCanvas.width, videoWorkCanvas.height);
-	var data = context.getImageData(0, 0, 100, 100).data;
+	var data = context.getImageData(0, 0, 256, 256).data;
 	var pixelCount = data.length / 4;
 
-	var samples = 100;
+	var samples = 2000;
 	var skip = 4 * Math.floor(pixelCount / samples);
 
 	var r = 0;
@@ -438,7 +438,7 @@ function updateLighting() {
 	}
 
 	light.color.setRGB(r / 0xff, g / 0xff, b / 0xff);
-	light.groundColor.copy(light.color).multiplyScalar(0.75);
+	light.groundColor.copy(light.color).multiplyScalar(0.6);
 }
 
 function update() {
