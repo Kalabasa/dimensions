@@ -4,6 +4,8 @@ var palettes = {
 	paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 };
 
+var maxParticleCount = 80;
+
 var mainScreen;
 var titleScreen;
 var video;
@@ -11,15 +13,19 @@ var canvas;
 var startButton;
 var hud;
 
+var videoWorkCanvas = document.createElement('canvas');
+
 var scene;
 var camera;
 var controls;
 var renderer;
 
-var time = 0;
-var running = false;
+var framesSinceStart = 0;
+var launched = false;
+var framesSinceLaunch = 0;
 var paintingPosition;
 var paintingNormal;
+var cameraPole;
 
 var ring1;
 var ring2;
@@ -240,7 +246,7 @@ function onDocumentLoad() {
 	hud = document.getElementById('hud');
 
 	startButton.addEventListener('click', start);
-	hud.addEventListener('click', lockIn);
+	hud.addEventListener('click', launch);
 }
 
 function start() {
@@ -289,7 +295,7 @@ function start() {
 	scene = new THREE.Scene();
 
 	light = new THREE.HemisphereLight(0xffffff, 0x888888, 1);
-	light.position.set(0, 100, 0);
+	light.position.set(0, 1, 0);
 	scene.add(light);
 
 	camera = new THREE.PerspectiveCamera(
@@ -298,8 +304,13 @@ function start() {
 		0.1,
 		1000
 	);
+	cameraPole = new THREE.Object3D();
+	cameraPole.position.set(0, 0, 0);
+	camera.position.set(0, 0, 4);
+	cameraPole.add(camera);
+	scene.add(cameraPole);
 
-	controls = new THREE.DeviceOrientationControls(camera);
+	controls = new THREE.DeviceOrientationControls(cameraPole);
 
 	renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -308,13 +319,13 @@ function start() {
 	loop();
 }
 
-function lockIn() {
+function launch() {
 	hud.style.display = 'none';
 
 	var cameraDirection = camera.getWorldDirection(tmpVector3);
-	paintingPosition = camera.position
+	paintingPosition = cameraPole.position
 		.clone()
-		.addScaledVector(cameraDirection, 40);
+		.addScaledVector(cameraDirection, 44);
 	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 	ring1 = new THREE.Mesh(
@@ -329,11 +340,7 @@ function lockIn() {
 			y: Math.random() * 1 - 0.5,
 			z: Math.random() * 1 - 0.5
 		});
-	ring1.lookAt(camera.position);
-	ring1.rotateOnAxis(
-		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
-		(Math.random() * Math.PI) / 4 - Math.PI / 8
-	);
+	ring1.lookAt(cameraPole.position);
 	ring1.scale.set(0.1, 0.1, 0.1);
 
 	ring2 = new THREE.Mesh(
@@ -348,11 +355,7 @@ function lockIn() {
 			y: Math.random() * 1 - 0.5,
 			z: Math.random() * 1 - 0.5
 		});
-	ring2.lookAt(camera.position);
-	ring2.rotateOnAxis(
-		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
-		(Math.random() * Math.PI) / 4 - Math.PI / 8
-	);
+	ring2.lookAt(cameraPole.position);
 	ring2.scale.set(0.1, 0.1, 0.1);
 
 	ring3 = new THREE.Mesh(
@@ -367,11 +370,7 @@ function lockIn() {
 			y: Math.random() * 1 - 0.5,
 			z: Math.random() * 1 - 0.5
 		});
-	ring3.lookAt(camera.position);
-	ring3.rotateOnAxis(
-		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
-		(Math.random() * Math.PI) / 4 - Math.PI / 8
-	);
+	ring3.lookAt(cameraPole.position);
 	ring3.scale.set(0.1, 0.1, 0.1);
 
 	ring4 = new THREE.Mesh(
@@ -386,11 +385,7 @@ function lockIn() {
 			y: Math.random() * 1 - 0.5,
 			z: Math.random() * 1 - 0.5
 		});
-	ring4.lookAt(camera.position);
-	ring4.rotateOnAxis(
-		{ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 },
-		(Math.random() * Math.PI) / 4 - Math.PI / 8
-	);
+	ring4.lookAt(cameraPole.position);
 	ring4.scale.set(0.1, 0.1, 0.1);
 
 	scene.add(ring1);
@@ -398,12 +393,18 @@ function lockIn() {
 	scene.add(ring3);
 	scene.add(ring4);
 
-	running = true;
+	launched = true;
 }
 
 function loop() {
-	if (running) {
+	framesSinceStart++;
+
+	if (launched) {
 		update();
+	}
+
+	if (framesSinceStart % 20 === 0) {
+		updateLighting();
 	}
 
 	controls.update();
@@ -411,8 +412,37 @@ function loop() {
 	requestAnimationFrame(loop);
 }
 
+function updateLighting() {
+	videoWorkCanvas.width = 100;
+	videoWorkCanvas.height = 100;
+	var context = videoWorkCanvas.getContext('2d');
+	context.drawImage(video, 0, 0, videoWorkCanvas.width, videoWorkCanvas.height);
+	var data = context.getImageData(0, 0, 100, 100).data;
+	var pixelCount = data.length / 4;
+
+	var samples = 100;
+	var skip = 4 * Math.floor(pixelCount / samples);
+
+	var r = 0;
+	var g = 0;
+	var b = 0;
+
+	var count = 0;
+	var i = 0;
+	while (count < samples) {
+		r = Math.max(r, data[i]);
+		g = Math.max(g, data[i + 1]);
+		b = Math.max(b, data[i + 2]);
+		i += skip;
+		count++;
+	}
+
+	light.color.setRGB(r / 0xff, g / 0xff, b / 0xff);
+	light.groundColor.copy(light.color).multiplyScalar(0.75);
+}
+
 function update() {
-	var cameraDirection = camera.getWorldDirection(tmpVector3);
+	var cameraDirection = camera.getWorldDirection(tmpVector3).clone();
 
 	if (ring1) {
 		ring1.scale.multiplyScalar(1.18);
@@ -420,7 +450,7 @@ function update() {
 		if (
 			ring1.position
 				.clone()
-				.sub(camera.position)
+				.sub(camera.getWorldPosition(tmpVector3))
 				.dot(cameraDirection) < 0
 		) {
 			scene.remove(ring1);
@@ -433,7 +463,7 @@ function update() {
 		if (
 			ring2.position
 				.clone()
-				.sub(camera.position)
+				.sub(camera.getWorldPosition(tmpVector3))
 				.dot(cameraDirection) < 0
 		) {
 			scene.remove(ring2);
@@ -446,7 +476,7 @@ function update() {
 		if (
 			ring3.position
 				.clone()
-				.sub(camera.position)
+				.sub(camera.getWorldPosition(tmpVector3))
 				.dot(cameraDirection) < 0
 		) {
 			scene.remove(ring3);
@@ -459,7 +489,7 @@ function update() {
 		if (
 			ring4.position
 				.clone()
-				.sub(camera.position)
+				.sub(camera.getWorldPosition(tmpVector3))
 				.dot(cameraDirection) < 0
 		) {
 			scene.remove(ring4);
@@ -467,8 +497,11 @@ function update() {
 		}
 	}
 
-	var spawn = time >= 30 && Math.random() < 0.1 + 1 / time ? 1 : 0;
-	while (spawn > 0 && particles.length < 60) {
+	var spawn =
+		framesSinceLaunch >= 30 && Math.random() < 0.1 + 15 / framesSinceLaunch
+			? 1
+			: 0;
+	while (spawn > 0 && particles.length < maxParticleCount) {
 		var typeNames = Object.keys(particleTypes);
 		var type =
 			particleTypes[typeNames[Math.floor(Math.random() * typeNames.length)]];
@@ -487,7 +520,7 @@ function update() {
 			y: Math.random() * 10 - 5,
 			z: Math.random() * 10 - 5
 		});
-		particle.object.lookAt(camera.position);
+		particle.object.lookAt(camera.getWorldPosition(tmpVector3));
 
 		scene.add(particle.object);
 
@@ -496,7 +529,7 @@ function update() {
 
 	particles.forEach(updateParticle);
 
-	time++;
+	framesSinceLaunch++;
 }
 
 function updateParticle(particle) {
@@ -519,7 +552,7 @@ function updateParticle(particle) {
 
 	tmpMatrix4.lookAt(
 		particle.object.position,
-		camera.position,
+		camera.getWorldPosition(tmpVector3),
 		particle.object.getWorldDirection(tmpVector3)
 	);
 	tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
@@ -528,25 +561,25 @@ function updateParticle(particle) {
 	var altitude = computeAltitude(particle);
 	var orbitRadius = particle.object.position
 		.clone()
-		.setY(camera.position.y)
-		.sub(camera.position)
+		.setY(cameraPole.position.y)
+		.sub(cameraPole.position)
 		.applyAxisAngle(
 			{ x: 0, y: 1, z: 0 },
 			((particle.id % 3 === 0) * Math.PI) / 2 - Math.PI / 4
 		)
 		.normalize();
-	var dir = camera.position
+	var dir = cameraPole.position
 		.clone()
 		.setY(
 			particle.object.position.y * 0.2 +
-				(camera.position.y + altitude * 28 + 4) * 0.8
+				(cameraPole.position.y + altitude * 28 + 4) * 0.8
 		)
 		.sub(particle.object.position)
 		.addScaledVector(
 			orbitRadius,
 			10 +
 				20 * ((particle.id % 12) / 12) +
-				700 / (time + 60) +
+				700 / (framesSinceLaunch + 60) +
 				200 / (Math.abs(altitude) * 200 + 1)
 		)
 		.normalize();
@@ -557,6 +590,7 @@ function updateParticle(particle) {
 	);
 	particle.velocity.multiplyScalar(0.97);
 
+	setTrailColor(particle.trail, particle.colors[0]);
 	if (particle.object.position.distanceTo(particle.lastTrailAdvance) > 5) {
 		particle.trail.advance();
 		particle.lastTrailAdvance.copy(particle.object.position);
@@ -568,7 +602,9 @@ function updateParticle(particle) {
 function computeAltitude(particle) {
 	// smooth triangle wave
 	return (
-		1 - (2 * Math.acos(0.99 * Math.sin(particle.id + time * 0.004))) / Math.PI
+		1 -
+		(2 * Math.acos(0.99 * Math.sin(particle.id + framesSinceLaunch * 0.008))) /
+			Math.PI
 	);
 }
 
@@ -577,37 +613,20 @@ function createParticle(type) {
 
 	var particle = type(colors);
 
-	// specify points to create planar trail-head geometry
+	particle.colors = colors;
+
 	var trailHeadGeometry = [];
 	trailHeadGeometry.push(
-		new THREE.Vector3(-0.5, 0.0, 0.0),
-		new THREE.Vector3(0.5, 0.0, 0.0)
+		new THREE.Vector3(-0.5, -0.5, 0.0),
+		new THREE.Vector3(0.5, 0.5, 0.0)
 	);
 
-	particle.lastTrailAdvance = new THREE.Vector3();
+	particle.lastTrailAdvance = new THREE.Vector3(Infinity, Infinity, Infinity);
 	particle.trail = new THREE.TrailRenderer(scene, false);
 
 	var trailMaterial = THREE.TrailRenderer.createBaseMaterial();
-	var trailColor1 = colors[0];
-	var trailColor1R = ((trailColor1 >> 16) & 0xff) / 0xff;
-	var trailColor1G = ((trailColor1 >> 8) & 0xff) / 0xff;
-	var trailColor1B = (trailColor1 & 0xff) / 0xff;
-	var trailColor2 = colors[1];
-	var trailColor2R = ((trailColor2 >> 16) & 0xff) / 0xff;
-	var trailColor2G = ((trailColor2 >> 8) & 0xff) / 0xff;
-	var trailColor2B = (trailColor2 & 0xff) / 0xff;
-	trailMaterial.uniforms.headColor.value.set(
-		trailColor1R,
-		trailColor1G,
-		trailColor1B,
-		1
-	);
-	trailMaterial.uniforms.tailColor.value.set(
-		trailColor2R,
-		trailColor2G,
-		trailColor2B,
-		1
-	);
+	trailMaterial.uniforms.headColor.value.set(1, 1, 1, 1);
+	trailMaterial.uniforms.tailColor.value.set(1, 1, 1, 1);
 
 	var trailLength = 20;
 
@@ -620,9 +639,19 @@ function createParticle(type) {
 		particle.object
 	);
 	particle.trail.activate();
-	particle.trail.advance();
 
 	particle.id = particles.length;
 	particles.push(particle);
 	return particle;
+}
+
+function setTrailColor(trail, color) {
+	var colorR = ((color >> 16) & 0xff) / 0xff;
+	var colorG = ((color >> 8) & 0xff) / 0xff;
+	var colorB = (color & 0xff) / 0xff;
+	colorR *= light.color.r;
+	colorG *= light.color.g;
+	colorB *= light.color.b;
+	trail.material.uniforms.headColor.value.set(colorR, colorG, colorB, 1);
+	trail.material.uniforms.tailColor.value.set(colorR, colorG, colorB, 1);
 }

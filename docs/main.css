@@ -40,24 +40,72 @@ body {
 	padding-bottom: 50.67%;
 	width: 38%;
 	height: 0;
-	border-radius: 2px;
-	box-shadow: 0 0 0 8px white, 0 0 0 16px black;
 	transform: translate(-50%, -50%);
+	animation: appear 2s 5s ease-out both;
 }
 
-.instruction {
+.viewfinderCorner1 {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 30px;
+	height: 30px;
+	border-top-left-radius: 8px;
+	border-top: solid 8px white;
+	border-left: solid 8px white;
+}
+.viewfinderCorner2 {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 30px;
+	height: 30px;
+	border-bottom-left-radius: 8px;
+	border-bottom: solid 8px white;
+	border-left: solid 8px white;
+}
+.viewfinderCorner3 {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 30px;
+	height: 30px;
+	border-top-right-radius: 8px;
+	border-top: solid 8px white;
+	border-right: solid 8px white;
+}
+.viewfinderCorner4 {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 30px;
+	height: 30px;
+	border-bottom-right-radius: 8px;
+	border-bottom: solid 8px white;
+	border-right: solid 8px white;
+}
+
+.instructions {
 	position: absolute;
 	padding: 36px;
+	top: 0;
 	left: 0;
 	right: 0;
-	bottom: 0;
 	color: white;
-	text-shadow: -2px 0 black, 2px 0 black, -2px 2px black, 0 2px black,
-		2px 2px black;
 	font-size: 14pt;
 	line-height: 1.2;
 	margin-top: 30px;
 	text-align: center;
+}
+
+.instruction1 {
+	animation: appear 0.3s 2s ease-out both;
+}
+.instruction2 {
+	animation: appear 0.3s 5s ease-out both;
+}
+.instruction3 {
+	animation: appear 0.3s 8s ease-out both;
 }
 
 #titleScreen {
@@ -90,7 +138,7 @@ body {
 	text-transform: uppercase;
 	outline: none;
 	letter-spacing: 2px;
-	box-shadow: 0 2px 8px #0004;
+	box-shadow: 0 2px 8px #0002;
 }
 
 #startButton:active {
@@ -113,4 +161,10 @@ body {
 #titleScreen.hide .footnote {
 	opacity: 0;
 	transition: opacity 0.4s;
+}
+
+@keyframes appear {
+	from {
+		opacity: 0;
+	}
 }
