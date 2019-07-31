@@ -4,7 +4,7 @@ var palettes = {
 	paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 };
 
-var maxParticleCount = 80;
+var maxParticleCount = 60;
 
 var mainScreen;
 var titleScreen;
@@ -342,12 +342,12 @@ function launch() {
 	paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 	ring1 = new THREE.Mesh(
-		new THREE.RingGeometry(0.4, 4, 32),
+		new THREE.RingGeometry(0.8, 4, 32),
 		new THREE.MeshBasicMaterial({ color: 0x2d475e })
 	);
 	ring1.position
 		.copy(paintingPosition)
-		.addScaledVector(paintingNormal, 0.2)
+		.addScaledVector(paintingNormal, 0.4)
 		.add({
 			x: Math.random() * 1 - 0.5,
 			y: Math.random() * 1 - 0.5,
@@ -357,12 +357,12 @@ function launch() {
 	ring1.scale.set(0.1, 0.1, 0.1);
 
 	ring2 = new THREE.Mesh(
-		new THREE.RingGeometry(0.3, 3, 32),
+		new THREE.RingGeometry(0.4, 3, 32),
 		new THREE.MeshBasicMaterial({ color: 0xbb5b85 })
 	);
 	ring2.position
 		.copy(paintingPosition)
-		.addScaledVector(paintingNormal, 0.15)
+		.addScaledVector(paintingNormal, 0.3)
 		.add({
 			x: Math.random() * 1 - 0.5,
 			y: Math.random() * 1 - 0.5,
@@ -377,7 +377,7 @@ function launch() {
 	);
 	ring3.position
 		.copy(paintingPosition)
-		.addScaledVector(paintingNormal, 0.1)
+		.addScaledVector(paintingNormal, 0.2)
 		.add({
 			x: Math.random() * 1 - 0.5,
 			y: Math.random() * 1 - 0.5,
@@ -392,7 +392,7 @@ function launch() {
 	);
 	ring4.position
 		.copy(paintingPosition)
-		.addScaledVector(paintingNormal, 0.05)
+		.addScaledVector(paintingNormal, 0.1)
 		.add({
 			x: Math.random() * 1 - 0.5,
 			y: Math.random() * 1 - 0.5,
