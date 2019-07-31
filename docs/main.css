@@ -33,21 +33,25 @@ body {
 	height: 100%;
 }
 
-.viewfinder {
+#hud.hide {
+	display: none;
+}
+
+.viewfinder, .guide {
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	padding-bottom: 50.67%;
-	width: 38%;
-	height: 0;
+	width: 38vmin;
+	height: 50.67vmin;
 	transform: translate(-50%, -50%);
-	animation: appear 2s 5s ease-out both;
 }
-
+.guide {
+	mix-blend-mode: darken;
+}
 .viewfinderCorner1 {
 	position: absolute;
-	top: 0;
-	left: 0;
+	top: -16px;
+	left: -16px;
 	width: 30px;
 	height: 30px;
 	border-top-left-radius: 8px;
@@ -56,8 +60,8 @@ body {
 }
 .viewfinderCorner2 {
 	position: absolute;
-	bottom: 0;
-	left: 0;
+	bottom: -16px;
+	left: -16px;
 	width: 30px;
 	height: 30px;
 	border-bottom-left-radius: 8px;
@@ -66,8 +70,8 @@ body {
 }
 .viewfinderCorner3 {
 	position: absolute;
-	top: 0;
-	right: 0;
+	top: -16px;
+	right: -16px;
 	width: 30px;
 	height: 30px;
 	border-top-right-radius: 8px;
@@ -76,8 +80,8 @@ body {
 }
 .viewfinderCorner4 {
 	position: absolute;
-	bottom: 0;
-	right: 0;
+	bottom: -16px;
+	right: -16px;
 	width: 30px;
 	height: 30px;
 	border-bottom-right-radius: 8px;
@@ -87,25 +91,16 @@ body {
 
 .instructions {
 	position: absolute;
-	padding: 36px;
-	top: 0;
-	left: 0;
-	right: 0;
+	top: 80%;
+	left: 50%;
+	width: 50%;
+	min-width: 200px;
 	color: white;
-	font-size: 14pt;
-	line-height: 1.2;
-	margin-top: 30px;
+	font-size: 16pt;
+	line-height: 1.6;
+	text-shadow: 0 0 16px #000c;
+	transform: translate(-50%, -50%);
 	text-align: center;
-}
-
-.instruction1 {
-	animation: appear 0.3s 2s ease-out both;
-}
-.instruction2 {
-	animation: appear 0.3s 5s ease-out both;
-}
-.instruction3 {
-	animation: appear 0.3s 8s ease-out both;
 }
 
 #titleScreen {
@@ -161,10 +156,4 @@ body {
 #titleScreen.hide .footnote {
 	opacity: 0;
 	transition: opacity 0.4s;
-}
-
-@keyframes appear {
-	from {
-		opacity: 0;
-	}
 }

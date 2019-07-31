@@ -39,6 +39,17 @@ var tmpMatrix4 = new THREE.Matrix4();
 var tmpQuaternion = new THREE.Quaternion();
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+	if (camera) {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+	}
+	if (renderer) {
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+}
 
 function randomPalette() {
 	return Object.values(palettes)[
@@ -254,6 +265,8 @@ function start() {
 		return;
 	}
 
+	hud.classList.remove('hide');
+
 	video.play();
 
 	var getUserMedia =
@@ -320,7 +333,7 @@ function start() {
 }
 
 function launch() {
-	hud.style.display = 'none';
+	hud.classList.add('hide');
 
 	var cameraDirection = camera.getWorldDirection(tmpVector3);
 	paintingPosition = cameraPole.position
@@ -617,8 +630,8 @@ function createParticle(type) {
 
 	var trailHeadGeometry = [];
 	trailHeadGeometry.push(
-		new THREE.Vector3(-0.5, -0.5, 0.0),
-		new THREE.Vector3(0.5, 0.5, 0.0)
+		new THREE.Vector3(0.5, -0.5, 0.0),
+		new THREE.Vector3(-0.5, 0.5, 0.0)
 	);
 
 	particle.lastTrailAdvance = new THREE.Vector3(Infinity, Infinity, Infinity);
