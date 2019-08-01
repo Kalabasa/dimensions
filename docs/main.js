@@ -610,12 +610,12 @@
 			.clone()
 			.setY(
 				particle.object.position.y * 0.2 +
-					(scene.position.y + altitude * 28 + 4) * 0.8
+					(scene.position.y + altitude * 32 + 4) * 0.8
 			)
 			.sub(particle.object.position)
 			.addScaledVector(
 				orbitRadius,
-				30 +
+				40 +
 					30 * ((particle.id % 12) / 12) +
 					1200 / (framesSinceLaunch + 60) +
 					200 / (Math.abs(altitude) * 200 + 1)
