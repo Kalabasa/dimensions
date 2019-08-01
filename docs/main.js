@@ -42,7 +42,6 @@
 	var videoSettings;
 	var videoWorkCanvas = document.createElement('canvas');
 
-	var modelMatch = null;
 	var modelMatchProgress = 0;
 
 	var scene;
@@ -467,6 +466,7 @@
 			}
 		} else {
 			checkImage();
+			viewfinder.style.opacity = Math.sqrt(1 - modelMatchProgress);
 		}
 
 		controls.update();
@@ -603,15 +603,10 @@
 			);
 		var meanError = errorSum / 6;
 
-		modelMatch = meanError < 0.65;
-
-		if (modelMatch) {
-			modelMatchProgress += 0.06;
-			if (modelMatchProgress >= 1) {
-				launch();
-			}
-		} else {
-			modelMatchProgress *= 0.8;
+		modelMatchProgress += 0.2 / (0.06 + meanError);
+		modelMatchProgress *= 0.65;
+		if (modelMatchProgress >= 1) {
+			setTimeout(launch, 500);
 		}
 	}
 
