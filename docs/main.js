@@ -338,7 +338,7 @@
 		);
 		cameraPole = new THREE.Object3D();
 		cameraPole.position.set(0, 0, 0);
-		camera.position.set(0, 0, 18);
+		camera.position.set(0, 0, -18);
 		cameraPole.add(camera);
 		scene.add(cameraPole);
 
