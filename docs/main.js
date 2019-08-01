@@ -31,9 +31,12 @@
 	var controls;
 	var renderer;
 
+	var clock = new THREE.Clock();
+	var delta = 0;
+
 	var framesSinceStart = 0;
-	var launched = false;
 	var framesSinceLaunch = 0;
+	var launched = false;
 	var paintingPosition;
 	var paintingNormal;
 	var cameraPole;
@@ -424,9 +427,6 @@
 
 		launched = true;
 	}
-
-	var clock = new THREE.Clock();
-	var delta = 0;
 
 	function loop() {
 		framesSinceStart++;
