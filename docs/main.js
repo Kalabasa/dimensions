@@ -335,7 +335,7 @@
 		);
 		cameraPole = new THREE.Object3D();
 		cameraPole.position.set(0, 0, 0);
-		camera.position.set(0, 0, 8);
+		camera.position.set(0, 0, 18);
 		cameraPole.add(camera);
 		scene.add(cameraPole);
 
@@ -354,7 +354,7 @@
 		var cameraDirection = camera.getWorldDirection(tmpVector3);
 		paintingPosition = cameraPole.position
 			.clone()
-			.addScaledVector(cameraDirection, 60);
+			.addScaledVector(cameraDirection, 70);
 		paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 		ring1 = new THREE.Mesh(
@@ -620,7 +620,7 @@
 			.sub(particle.object.position)
 			.addScaledVector(
 				orbitRadius,
-				10 +
+				20 +
 					60 * ((particle.id % 12) / 12) +
 					1200 / (framesSinceLaunch + 60) +
 					200 / (Math.abs(altitude) * 200 + 1)
