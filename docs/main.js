@@ -545,25 +545,25 @@
 			data,
 			lineStride,
 			Math.floor(viewfinderVideoRect.width / 3),
-			0,
+			Math.floor(viewfinderVideoRect.height / 12),
 			Math.ceil(viewfinderVideoRect.width / 3),
-			Math.ceil(viewfinderVideoRect.height / 3)
+			Math.ceil(viewfinderVideoRect.height / 6)
 		);
 		var midColor = computeImageAverageColor(
 			data,
 			lineStride,
 			Math.floor(viewfinderVideoRect.width / 3),
-			Math.floor(viewfinderVideoRect.height / 3),
+			Math.floor((viewfinderVideoRect.height * 5) / 12),
 			Math.ceil(viewfinderVideoRect.width / 3),
-			Math.ceil(viewfinderVideoRect.height / 3)
+			Math.ceil(viewfinderVideoRect.height / 6)
 		);
 		var bottomColor = computeImageAverageColor(
 			data,
 			lineStride,
 			Math.floor(viewfinderVideoRect.width / 3),
-			Math.floor((viewfinderVideoRect.height * 2) / 3),
+			Math.floor((viewfinderVideoRect.height * 9) / 12),
 			Math.ceil(viewfinderVideoRect.width / 3),
-			Math.ceil(viewfinderVideoRect.height / 3)
+			Math.ceil(viewfinderVideoRect.height / 6)
 		);
 		var deltaTop = {
 			r: topColor.r - midColor.r,
@@ -575,6 +575,13 @@
 			g: midColor.g - bottomColor.g,
 			b: midColor.b - bottomColor.b
 		};
+
+		if (location.href.includes('training')) {
+			console.log(
+				JSON.stringify({ deltaTop: deltaTop, deltaBottom: deltaBottom })
+			);
+			return;
+		}
 
 		var errorSum =
 			Math.abs(
