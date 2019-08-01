@@ -304,7 +304,9 @@
 					})
 					.catch(function(error) {
 						console.error(error);
-						alert('Camera access is required for this app. Please try again.');
+						alert(
+							'Camera is required for this app. Please allow camera access.'
+						);
 						location.reload();
 					});
 			} catch (error) {
