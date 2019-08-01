@@ -336,13 +336,8 @@
 			0.1,
 			1000
 		);
-		cameraPole = new THREE.Object3D();
-		cameraPole.position.set(0, 0, 0);
-		camera.position.set(0, 0, -18);
-		cameraPole.add(camera);
-		scene.add(cameraPole);
 
-		controls = new THREE.DeviceOrientationControls(cameraPole);
+		controls = new THREE.DeviceOrientationControls(camera);
 
 		renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 		renderer.setSize(window.innerWidth, window.innerHeight);
@@ -355,9 +350,9 @@
 		hud.classList.add('hide');
 
 		var cameraDirection = camera.getWorldDirection(tmpVector3);
-		paintingPosition = cameraPole.position
+		paintingPosition = scene.position
 			.clone()
-			.addScaledVector(cameraDirection, 70);
+			.addScaledVector(cameraDirection, 100);
 		paintingNormal = cameraDirection.clone().multiplyScalar(-1);
 
 		ring1 = new THREE.Mesh(
@@ -372,7 +367,7 @@
 				y: Math.random() * 1 - 0.5,
 				z: Math.random() * 1 - 0.5
 			});
-		ring1.lookAt(cameraPole.position);
+		ring1.lookAt(scene.position);
 		ring1.scale.set(0.1, 0.1, 0.1);
 
 		ring2 = new THREE.Mesh(
@@ -387,7 +382,7 @@
 				y: Math.random() * 1 - 0.5,
 				z: Math.random() * 1 - 0.5
 			});
-		ring2.lookAt(cameraPole.position);
+		ring2.lookAt(scene.position);
 		ring2.scale.set(0.1, 0.1, 0.1);
 
 		ring3 = new THREE.Mesh(
@@ -402,7 +397,7 @@
 				y: Math.random() * 1 - 0.5,
 				z: Math.random() * 1 - 0.5
 			});
-		ring3.lookAt(cameraPole.position);
+		ring3.lookAt(scene.position);
 		ring3.scale.set(0.1, 0.1, 0.1);
 
 		ring4 = new THREE.Mesh(
@@ -417,7 +412,7 @@
 				y: Math.random() * 1 - 0.5,
 				z: Math.random() * 1 - 0.5
 			});
-		ring4.lookAt(cameraPole.position);
+		ring4.lookAt(scene.position);
 		ring4.scale.set(0.1, 0.1, 0.1);
 
 		scene.add(ring1);
@@ -493,7 +488,7 @@
 			if (
 				ring1.position
 					.clone()
-					.sub(camera.getWorldPosition(tmpVector3))
+					.sub(scene.position)
 					.dot(cameraDirection) < 0
 			) {
 				scene.remove(ring1);
@@ -506,7 +501,7 @@
 			if (
 				ring2.position
 					.clone()
-					.sub(camera.getWorldPosition(tmpVector3))
+					.sub(scene.position)
 					.dot(cameraDirection) < 0
 			) {
 				scene.remove(ring2);
@@ -519,7 +514,7 @@
 			if (
 				ring3.position
 					.clone()
-					.sub(camera.getWorldPosition(tmpVector3))
+					.sub(scene.position)
 					.dot(cameraDirection) < 0
 			) {
 				scene.remove(ring3);
@@ -532,7 +527,7 @@
 			if (
 				ring4.position
 					.clone()
-					.sub(camera.getWorldPosition(tmpVector3))
+					.sub(scene.position)
 					.dot(cameraDirection) < 0
 			) {
 				scene.remove(ring4);
@@ -563,7 +558,7 @@
 				y: Math.random() * 10 - 5,
 				z: Math.random() * 10 - 5
 			});
-			particle.object.lookAt(camera.getWorldPosition(tmpVector3));
+			particle.object.lookAt(scene.position);
 
 			scene.add(particle.object);
 
@@ -595,7 +590,7 @@
 
 		tmpMatrix4.lookAt(
 			particle.object.position,
-			camera.getWorldPosition(tmpVector3),
+			scene.position,
 			particle.object.getWorldDirection(tmpVector3)
 		);
 		tmpQuaternion.setFromRotationMatrix(tmpMatrix4);
@@ -604,24 +599,24 @@
 		var altitude = computeAltitude(particle);
 		var orbitRadius = particle.object.position
 			.clone()
-			.setY(cameraPole.position.y)
-			.sub(cameraPole.position)
+			.setY(scene.position.y)
+			.sub(scene.position)
 			.applyAxisAngle(
 				{ x: 0, y: 1, z: 0 },
 				((particle.id % 3 === 0) * Math.PI) / 2 - Math.PI / 4
 			)
 			.normalize();
-		var dir = cameraPole.position
+		var dir = scene.position
 			.clone()
 			.setY(
 				particle.object.position.y * 0.2 +
-					(cameraPole.position.y + altitude * 28 + 4) * 0.8
+					(scene.position.y + altitude * 28 + 4) * 0.8
 			)
 			.sub(particle.object.position)
 			.addScaledVector(
 				orbitRadius,
-				20 +
-					60 * ((particle.id % 12) / 12) +
+				30 +
+					30 * ((particle.id % 12) / 12) +
 					1200 / (framesSinceLaunch + 60) +
 					200 / (Math.abs(altitude) * 200 + 1)
 			)
