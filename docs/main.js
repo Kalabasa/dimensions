@@ -13,6 +13,19 @@
 		paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 	};
 
+	var paintingModel = {
+		deltaTop: {
+			r: -0.24705882352941178,
+			g: -0.36705882352941177,
+			b: -0.3803921568627452
+		},
+		deltaBottom: {
+			r: 0.19424836601307183,
+			g: 0.10300653594771259,
+			b: 0.13516339869281035
+		}
+	};
+
 	var maxParticleCount = 60;
 
 	var videoFPS = 24;
@@ -21,10 +34,16 @@
 	var titleScreen;
 	var video;
 	var canvas;
+	var canvasTest;
 	var startButton;
 	var hud;
+	var viewfinder;
 
+	var videoSettings;
 	var videoWorkCanvas = document.createElement('canvas');
+
+	var modelMatch = null;
+	var modelMatchProgress = 0;
 
 	var scene;
 	var camera;
@@ -267,8 +286,13 @@
 		titleScreen = document.getElementById('titleScreen');
 		video = document.getElementById('video');
 		canvas = document.getElementById('canvas');
+		canvasTest = document.getElementById('canvasTest');
 		startButton = document.getElementById('startButton');
 		hud = document.getElementById('hud');
+		viewfinder = document.getElementById('viewfinder');
+
+		canvasTest.width = window.innerWidth;
+		canvasTest.height = window.innerHeight;
 
 		startButton.addEventListener('click', start);
 		hud.addEventListener('click', launch);
@@ -300,10 +324,12 @@
 					}
 				})
 					.then(function(stream) {
+						loop();
 						titleScreen.classList.add('hide');
 						video.srcObject = stream;
 						video.play();
-						videoFPS = stream.getVideoTracks()[0].getSettings().frameRate;
+						videoSettings = stream.getVideoTracks()[0].getSettings();
+						videoFPS = videoSettings.frameRate;
 					})
 					.catch(function(error) {
 						console.error(error);
@@ -342,11 +368,15 @@
 		renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setClearColor(0, 0);
-
-		loop();
 	}
 
 	function launch() {
+		if (launched) {
+			return;
+		}
+
+		launched = true;
+
 		hud.classList.add('hide');
 
 		var cameraDirection = camera.getWorldDirection(tmpVector3);
@@ -419,8 +449,6 @@
 		scene.add(ring2);
 		scene.add(ring3);
 		scene.add(ring4);
-
-		launched = true;
 	}
 
 	function loop() {
@@ -428,23 +456,189 @@
 
 		if (launched) {
 			update();
+
+			delta += clock.getDelta();
+			var interval = 1 / videoFPS;
+			if (delta > interval) {
+				updateLighting();
+				renderer.render(scene, camera);
+
+				delta = delta % interval;
+			}
+		} else {
+			checkImage();
 		}
 
 		controls.update();
 
-		delta += clock.getDelta();
-		var interval = 1 / videoFPS;
-		if (delta > interval) {
-			updateLighting();
-			renderer.render(scene, camera);
-
-			delta = delta % interval;
-		}
-
 		requestAnimationFrame(loop);
 	}
 
+	function checkImage() {
+		if (!video.currentTime) {
+			return;
+		}
+
+		videoWorkCanvas.width = 64;
+		videoWorkCanvas.height =
+			(videoWorkCanvas.width * video.videoHeight) / video.videoWidth;
+		var context = videoWorkCanvas.getContext('2d');
+		context.drawImage(
+			video,
+			0,
+			0,
+			videoWorkCanvas.width,
+			videoWorkCanvas.height
+		);
+
+		var videoAspect = videoWorkCanvas.width / videoWorkCanvas.height;
+		var windowAspect = window.innerWidth / window.innerHeight;
+		var videoClipRect =
+			windowAspect < videoAspect
+				? {
+						x: Math.floor(
+							(videoWorkCanvas.width - videoWorkCanvas.height * windowAspect) /
+								2
+						),
+						y: 0,
+						width: Math.floor(videoWorkCanvas.height * windowAspect),
+						height: videoWorkCanvas.height
+				  }
+				: {
+						x: 0,
+						y: Math.floor(
+							(videoWorkCanvas.height - videoWorkCanvas.width / windowAspect) /
+								2
+						),
+						width: videoWorkCanvas.width,
+						height: Math.floor(videoWorkCanvas.width / windowAspect)
+				  };
+
+		var viewfinderScreenRect = viewfinder.getBoundingClientRect();
+		var viewfinderVideoRect = {
+			x: Math.floor(
+				videoClipRect.x +
+					(viewfinderScreenRect.x * videoClipRect.width) / window.innerWidth
+			),
+			y: Math.floor(
+				videoClipRect.y +
+					(viewfinderScreenRect.y * videoClipRect.height) / window.innerHeight
+			),
+			width: Math.ceil(
+				(viewfinderScreenRect.width * videoClipRect.width) / window.innerWidth
+			),
+			height: Math.ceil(
+				(viewfinderScreenRect.height * videoClipRect.height) /
+					window.innerHeight
+			)
+		};
+
+		var data = context.getImageData(
+			viewfinderVideoRect.x,
+			viewfinderVideoRect.y,
+			viewfinderVideoRect.width,
+			viewfinderVideoRect.height
+		).data;
+
+		var lineStride = 4 * viewfinderVideoRect.width;
+		var topColor = computeImageAverageColor(
+			data,
+			lineStride,
+			Math.floor(viewfinderVideoRect.width / 3),
+			0,
+			Math.ceil(viewfinderVideoRect.width / 3),
+			Math.ceil(viewfinderVideoRect.height / 3)
+		);
+		var midColor = computeImageAverageColor(
+			data,
+			lineStride,
+			Math.floor(viewfinderVideoRect.width / 3),
+			Math.floor(viewfinderVideoRect.height / 3),
+			Math.ceil(viewfinderVideoRect.width / 3),
+			Math.ceil(viewfinderVideoRect.height / 3)
+		);
+		var bottomColor = computeImageAverageColor(
+			data,
+			lineStride,
+			Math.floor(viewfinderVideoRect.width / 3),
+			Math.floor((viewfinderVideoRect.height * 2) / 3),
+			Math.ceil(viewfinderVideoRect.width / 3),
+			Math.ceil(viewfinderVideoRect.height / 3)
+		);
+		var deltaTop = {
+			r: topColor.r - midColor.r,
+			g: topColor.g - midColor.g,
+			b: topColor.b - midColor.b
+		};
+		var deltaBottom = {
+			r: midColor.r - bottomColor.r,
+			g: midColor.g - bottomColor.g,
+			b: midColor.b - bottomColor.b
+		};
+
+		var errorSum =
+			Math.abs(
+				(paintingModel.deltaTop.r - deltaTop.r) /
+					(0.00001 + Math.abs(paintingModel.deltaTop.r))
+			) +
+			Math.abs(
+				(paintingModel.deltaTop.g - deltaTop.g) /
+					(0.00001 + Math.abs(paintingModel.deltaTop.g))
+			) +
+			Math.abs(
+				(paintingModel.deltaTop.b - deltaTop.b) /
+					(0.00001 + Math.abs(paintingModel.deltaTop.b))
+			) +
+			Math.abs(
+				(paintingModel.deltaBottom.r - deltaBottom.r) /
+					(0.00001 + Math.abs(paintingModel.deltaBottom.r))
+			) +
+			Math.abs(
+				(paintingModel.deltaBottom.g - deltaBottom.g) /
+					(0.00001 + Math.abs(paintingModel.deltaBottom.g))
+			) +
+			Math.abs(
+				(paintingModel.deltaBottom.b - deltaBottom.b) /
+					(0.00001 + Math.abs(paintingModel.deltaBottom.b))
+			);
+		var meanError = errorSum / 6;
+
+		modelMatch = meanError < 0.65;
+
+		if (modelMatch) {
+			modelMatchProgress += 0.06;
+			if (modelMatchProgress >= 1) {
+				launch();
+			}
+		} else {
+			modelMatchProgress *= 0.8;
+		}
+	}
+
+	function computeImageAverageColor(imageData, lineStride, x, y, w, h) {
+		var r = 0;
+		var g = 0;
+		var b = 0;
+		for (var j = y; j < y + h; j++) {
+			for (var i = x; i < x + w; i++) {
+				r += imageData[j * lineStride + i * 4] / 0xff;
+				g += imageData[j * lineStride + i * 4 + 1] / 0xff;
+				b += imageData[j * lineStride + i * 4 + 2] / 0xff;
+			}
+		}
+		var count = w * h;
+		return {
+			r: r / count,
+			g: g / count,
+			b: b / count
+		};
+	}
+
 	function updateLighting() {
+		if (!video.currentTime) {
+			return;
+		}
+
 		videoWorkCanvas.width = 256;
 		videoWorkCanvas.height = 256;
 		var context = videoWorkCanvas.getContext('2d');
