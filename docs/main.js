@@ -514,13 +514,14 @@
 			}
 		} else {
 			matchImage();
-			viewfinder.style.opacity = Math.sqrt(
-				1 -
+			viewfinder.style.opacity = Math.pow(
+				1.2 -
 					Math.max(
 						featureMatchProgress[0],
 						featureMatchProgress[1],
 						featureMatchProgress[2]
-					)
+					),
+				0.5
 			);
 		}
 
