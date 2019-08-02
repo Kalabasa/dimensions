@@ -26,7 +26,7 @@
 		}
 	};
 
-	var maxParticleCount = 60;
+	var maxParticleCount = 90;
 
 	var videoFPS = 24;
 
@@ -806,12 +806,12 @@
 			.clone()
 			.setY(
 				particle.object.position.y * 0.2 +
-					(scene.position.y + altitude * 32 + 4) * 0.8
+					(scene.position.y + altitude * 32 + 2) * 0.8
 			)
 			.sub(particle.object.position)
 			.addScaledVector(
 				orbitRadius,
-				40 +
+				30 +
 					30 * ((particle.id % 12) / 12) +
 					1200 / (framesSinceLaunch + 60) +
 					200 / (Math.abs(altitude) * 200 + 1)
