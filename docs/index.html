@@ -10,12 +10,15 @@
 		<script src="main.js"></script>
 	</head>
 	<body>
+		<img class="target" id="target0" src="target0.jpg" />
+		<img class="target" id="target1" src="target1.jpg" />
+		<img class="target" id="target2" src="target2.jpg" />
 		<div id="mainScreen">
 			<video id="video" autoplay muted playsinline></video>
 			<canvas id="canvas"></canvas>
 			<div id="hud" class="hide">
 				<div class="instructions">
-					Align&nbsp;the&nbsp;piece inside&nbsp;the&nbsp;frame.<br />
+					Align the&nbsp;whole&nbsp;piece inside&nbsp;the&nbsp;frame.<br />
 					<small>Tap the screen if it doesn't start automatically.</small>
 				</div>
 				<img class="guide" src="guide.png" />
@@ -30,7 +33,9 @@
 		</div>
 		<div id="titleScreen">
 			<button id="startButton" autofocus>Start</button>
-			<div class="footnote">*requires camera access</div>
+			<div class="footnote">
+				*requires camera access and orientation sensor access from your browser
+			</div>
 		</div>
 	</body>
 </html>

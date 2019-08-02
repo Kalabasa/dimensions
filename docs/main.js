@@ -13,37 +13,22 @@
 		paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
 	};
 
-	var paintingModel = {
-		deltaTop: {
-			r: -0.24705882352941178,
-			g: -0.36705882352941177,
-			b: -0.3803921568627452
-		},
-		deltaBottom: {
-			r: 0.19424836601307183,
-			g: 0.10300653594771259,
-			b: 0.13516339869281035
-		}
-	};
-
-	var paintingModelNEW = {
-		deltaTop: {
-			r: -0.33362745098039226,
-			g: -0.4113725490196079,
-			b: -0.35411764705882415
-		},
-		deltaBottom: {
-			r: 0.34960784313725507,
-			g: 0.13960784313725494,
-			b: 0.3422549019607845
-		}
-	};
-	paintingModel = paintingModelNEW;
+	var paintingFeatureVec = [
+		-0.4798865469131026,
+		-0.5189976108917902,
+		-0.44015467239507094,
+		0.3973187451803179,
+		0.1971073462417984,
+		0.33151282800982806
+	];
 
 	var maxParticleCount = 90;
 
 	var videoFPS = 24;
 
+	var target0;
+	var target1;
+	var target2;
 	var mainScreen;
 	var titleScreen;
 	var video;
@@ -56,7 +41,7 @@
 	var videoSettings;
 	var videoWorkCanvas = document.createElement('canvas');
 
-	var modelMatchProgress = 0;
+	var featureMatchProgress = 0;
 
 	var scene;
 	var camera;
@@ -295,6 +280,9 @@
 	};
 
 	function onDocumentLoad() {
+		target0 = document.getElementById('target0');
+		target1 = document.getElementById('target1');
+		target2 = document.getElementById('target2');
 		mainScreen = document.getElementById('mainScreen');
 		titleScreen = document.getElementById('titleScreen');
 		video = document.getElementById('video');
@@ -340,7 +328,6 @@
 						loop();
 						titleScreen.classList.add('hide');
 						video.srcObject = stream;
-						video.play();
 						videoSettings = stream.getVideoTracks()[0].getSettings();
 						videoFPS = videoSettings.frameRate;
 					})
@@ -361,6 +348,10 @@
 			alert(
 				'Your browser does not support camera access. Your experience may be limited.'
 			);
+		}
+
+		if (DeviceOrientationEvent.requestPermission) {
+			DeviceOrientationEvent.requestPermission();
 		}
 
 		scene = new THREE.Scene();
@@ -479,8 +470,8 @@
 				delta = delta % interval;
 			}
 		} else {
-			checkImage();
-			viewfinder.style.opacity = Math.sqrt(1 - modelMatchProgress);
+			matchImage();
+			viewfinder.style.opacity = Math.sqrt(1 - featureMatchProgress);
 		}
 
 		controls.update();
@@ -488,7 +479,7 @@
 		requestAnimationFrame(loop);
 	}
 
-	function checkImage() {
+	function matchImage() {
 		if (!video.currentTime) {
 			return;
 		}
@@ -496,8 +487,8 @@
 		videoWorkCanvas.width = 64;
 		videoWorkCanvas.height =
 			(videoWorkCanvas.width * video.videoHeight) / video.videoWidth;
-		var context = videoWorkCanvas.getContext('2d');
-		context.drawImage(
+		var videoWorkContext = videoWorkCanvas.getContext('2d');
+		videoWorkContext.drawImage(
 			video,
 			0,
 			0,
@@ -547,7 +538,28 @@
 			)
 		};
 
-		var data = context.getImageData(
+		if (location.href.includes('target')) {
+			var target;
+			if (location.href.includes('target0')) {
+				target = target0;
+			} else if (location.href.includes('target1')) {
+				target = target1;
+			} else if (location.href.includes('target2')) {
+				target = target2;
+			}
+
+			if (target) {
+				videoWorkContext.drawImage(
+					target,
+					viewfinderVideoRect.x,
+					viewfinderVideoRect.y,
+					viewfinderVideoRect.width,
+					viewfinderVideoRect.height
+				);
+			}
+		}
+
+		var data = videoWorkContext.getImageData(
 			viewfinderVideoRect.x,
 			viewfinderVideoRect.y,
 			viewfinderVideoRect.width,
@@ -590,53 +602,83 @@
 			b: midColor.b - bottomColor.b
 		};
 
+		var length =
+			Math.sqrt(
+				deltaTop.r * deltaTop.r +
+					deltaTop.g * deltaTop.g +
+					deltaTop.b * deltaTop.b +
+					deltaBottom.r * deltaBottom.r +
+					deltaBottom.g * deltaBottom.g +
+					deltaBottom.b * deltaBottom.b
+			) || 1;
+
+		var normalizedFeatureVec = [
+			deltaTop.r / length,
+			deltaTop.g / length,
+			deltaTop.b / length,
+			deltaBottom.r / length,
+			deltaBottom.g / length,
+			deltaBottom.b / length
+		];
+
 		if (location.href.includes('training')) {
-			console.log(
-				JSON.stringify({ deltaTop: deltaTop, deltaBottom: deltaBottom })
-			);
+			console.log(JSON.stringify(normalizedFeatureVec));
 			var testCtx = canvasTest.getContext('2d');
 			testCtx.clearRect(0, 0, testCtx.canvas.width, testCtx.canvas.height);
-			testCtx.fillStyle = 'magenta';
+			testCtx.fillStyle = 'red';
 			testCtx.font = 'bold 16px sans-serif';
-			testCtx.fillText('TR: ' + deltaTop.r, 5, 5 + 20 * 1);
-			testCtx.fillText('TG: ' + deltaTop.g, 5, 5 + 20 * 2);
-			testCtx.fillText('TB: ' + deltaTop.b, 5, 5 + 20 * 3);
-			testCtx.fillText('BR: ' + deltaBottom.r, 5, 5 + 20 * 4);
-			testCtx.fillText('BG: ' + deltaBottom.g, 5, 5 + 20 * 5);
-			testCtx.fillText('BB: ' + deltaBottom.b, 5, 5 + 20 * 6);
+			normalizedFeatureVec.forEach(function(val, index) {
+				testCtx.fillText(val, 5, 5 + 20 * (1 + index));
+			});
+			testCtx.drawImage(
+				target1,
+				0,
+				testCtx.canvas.height - target1.height,
+				target1.width,
+				target1.height
+			);
 			return;
 		}
 
-		var errorSum =
-			Math.abs(
-				(paintingModel.deltaTop.r - deltaTop.r) /
-					(0.00001 + Math.abs(paintingModel.deltaTop.r))
-			) +
-			Math.abs(
-				(paintingModel.deltaTop.g - deltaTop.g) /
-					(0.00001 + Math.abs(paintingModel.deltaTop.g))
-			) +
-			Math.abs(
-				(paintingModel.deltaTop.b - deltaTop.b) /
-					(0.00001 + Math.abs(paintingModel.deltaTop.b))
-			) +
-			Math.abs(
-				(paintingModel.deltaBottom.r - deltaBottom.r) /
-					(0.00001 + Math.abs(paintingModel.deltaBottom.r))
-			) +
-			Math.abs(
-				(paintingModel.deltaBottom.g - deltaBottom.g) /
-					(0.00001 + Math.abs(paintingModel.deltaBottom.g))
-			) +
-			Math.abs(
-				(paintingModel.deltaBottom.b - deltaBottom.b) /
-					(0.00001 + Math.abs(paintingModel.deltaBottom.b))
-			);
-		var meanError = errorSum / 6;
+		// var errorSum =
+		// 	Math.abs(
+		// 		(paintingModel.deltaTop.r - deltaTop.r) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaTop.r))
+		// 	) +
+		// 	Math.abs(
+		// 		(paintingModel.deltaTop.g - deltaTop.g) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaTop.g))
+		// 	) +
+		// 	Math.abs(
+		// 		(paintingModel.deltaTop.b - deltaTop.b) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaTop.b))
+		// 	) +
+		// 	Math.abs(
+		// 		(paintingModel.deltaBottom.r - deltaBottom.r) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.r))
+		// 	) +
+		// 	Math.abs(
+		// 		(paintingModel.deltaBottom.g - deltaBottom.g) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.g))
+		// 	) +
+		// 	Math.abs(
+		// 		(paintingModel.deltaBottom.b - deltaBottom.b) /
+		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.b))
+		// 	);
+		// var meanError = errorSum / 6;
+		var errorSum = normalizedFeatureVec.reduce(function(cur, val, index) {
+			var delta = paintingFeatureVec[index] - val;
+			return cur + delta * delta;
+		}, 0);
+		var vectorDistance = Math.sqrt(errorSum);
 
-		modelMatchProgress += 0.2 / (0.06 + meanError);
-		modelMatchProgress *= 0.65;
-		if (modelMatchProgress >= 1) {
+		console.log(normalizedFeatureVec);
+		console.log('d', vectorDistance);
+
+		featureMatchProgress += 0.04 / (0.02 + vectorDistance);
+		featureMatchProgress *= 0.8;
+		console.log('p', featureMatchProgress);
+		if (featureMatchProgress >= 1) {
 			setTimeout(launch, 500);
 		}
 	}

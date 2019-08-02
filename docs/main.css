@@ -60,6 +60,7 @@ body {
 	border-top-left-radius: 8px;
 	border-top: solid 8px white;
 	border-left: solid 8px white;
+	animation: pulse 0.6s infinite alternate;
 }
 .viewfinderCorner2 {
 	position: absolute;
@@ -70,6 +71,7 @@ body {
 	border-bottom-left-radius: 8px;
 	border-bottom: solid 8px white;
 	border-left: solid 8px white;
+	animation: pulse 0.6s infinite alternate;
 }
 .viewfinderCorner3 {
 	position: absolute;
@@ -80,6 +82,7 @@ body {
 	border-top-right-radius: 8px;
 	border-top: solid 8px white;
 	border-right: solid 8px white;
+	animation: pulse 0.6s infinite alternate;
 }
 .viewfinderCorner4 {
 	position: absolute;
@@ -90,6 +93,7 @@ body {
 	border-bottom-right-radius: 8px;
 	border-bottom: solid 8px white;
 	border-right: solid 8px white;
+	animation: pulse 0.6s infinite alternate;
 }
 
 .instructions {
@@ -157,6 +161,7 @@ body {
 }
 
 .footnote {
+	padding: 0 32px;
 	color: #e8e8ee;
 	font-size: 12pt;
 	margin-top: 30px;
@@ -168,8 +173,25 @@ body {
 	transition: opacity 0.4s;
 }
 
+.target {
+	position: absolute;
+	left: -100%;
+	top: -100%;
+	opacity: 0;
+	pointer-events: none;
+}
+
 @keyframes appear {
 	from {
 		opacity: 0;
+	}
+}
+
+@keyframes pulse {
+	from {
+		transform: scale(0.9);
+	}
+	to {
+		transform: scale(1);
 	}
 }
