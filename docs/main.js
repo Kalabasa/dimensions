@@ -26,6 +26,20 @@
 		}
 	};
 
+	var paintingModelNEW = {
+		deltaTop: {
+			r: -0.33362745098039226,
+			g: -0.4113725490196079,
+			b: -0.35411764705882415
+		},
+		deltaBottom: {
+			r: 0.34960784313725507,
+			g: 0.13960784313725494,
+			b: 0.3422549019607845
+		}
+	};
+	paintingModel = paintingModelNEW;
+
 	var maxParticleCount = 90;
 
 	var videoFPS = 24;
