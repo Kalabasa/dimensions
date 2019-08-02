@@ -708,7 +708,6 @@
 		guide.src = ['target0.jpg', 'target1.jpg', 'target2.jpg'][
 			highestMatchProgressIndex
 		];
-		console.log(featureMatchProgress);
 	}
 
 	function computeImageAverageColor(imageData, lineStride, x, y, w, h) {
