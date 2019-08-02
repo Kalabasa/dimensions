@@ -672,12 +672,8 @@
 		}, 0);
 		var vectorDistance = Math.sqrt(errorSum);
 
-		console.log(normalizedFeatureVec);
-		console.log('d', vectorDistance);
-
-		featureMatchProgress += 0.04 / (0.02 + vectorDistance);
+		featureMatchProgress += 0.06 / (0.02 + vectorDistance);
 		featureMatchProgress *= 0.8;
-		console.log('p', featureMatchProgress);
 		if (featureMatchProgress >= 1) {
 			setTimeout(launch, 500);
 		}
