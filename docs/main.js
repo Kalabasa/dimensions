@@ -7,20 +7,52 @@
 		return;
 	}
 
-	var palettes = {
-		paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e],
-		paletteWarm: [0x4d2b52, 0xbb5b85],
-		paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
-	};
+	var palettes = [
+		{
+			paletteWarm: [0x4d2b52, 0xbb5b85, 0xe0e4ad],
+			paletteMixed: [0x4d2b52, 0xf8dd85, 0xaaabb9],
+			paletteNeutral: [0xb8b9c9, 0xe8e8ee, 0xaaabb9]
+		},
+		{
+			paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e],
+			paletteWarm: [0x4d2b52, 0xbb5b85],
+			paletteMid: [0xffd02d, 0xf8dd85, 0xf3f5ca]
+		},
+		{
+			paletteCool: [0x2d475e, 0x49ad9c, 0x99c89e, 0xddd359],
+			paletteMixed: [0x49ad9c, 0xf8dd85, 0xaaabb9],
+			paletteNeutral: [0xb8b9c9, 0xe8e8ee, 0xaaabb9]
+		}
+	];
 
 	var paintingFeatureVec = [
-		-0.4798865469131026,
-		-0.5189976108917902,
-		-0.44015467239507094,
-		0.3973187451803179,
-		0.1971073462417984,
-		0.33151282800982806
+		[
+			0.6391872287819984,
+			0.7296098844665485,
+			-0.2210092938228081,
+			-0.0057990776804819014,
+			0.07796537770425577,
+			0.06443419644979827
+		],
+		[
+			-0.3593924173784146,
+			-0.611915816235142,
+			-0.498629075974555,
+			0.35716016633879705,
+			0.17718492626963767,
+			0.2980055137889341
+		],
+		[
+			0.029811998557934285,
+			-0.026711550707909825,
+			-0.08275810799682715,
+			-0.5852691556893755,
+			-0.22537870909798688,
+			-0.7734424905870613
+		]
 	];
+
+	var paintingMatchThreshold = [1, 1, 1];
 
 	var maxParticleCount = 90;
 
@@ -37,11 +69,14 @@
 	var startButton;
 	var hud;
 	var viewfinder;
+	var guide;
 
 	var videoSettings;
 	var videoWorkCanvas = document.createElement('canvas');
 
-	var featureMatchProgress = 0;
+	var matchIndex = 1;
+	var highestMatchProgressIndex = 1;
+	var featureMatchProgress = [0, 0, 0];
 
 	var scene;
 	var camera;
@@ -83,8 +118,8 @@
 	}
 
 	function randomPalette() {
-		return Object.values(palettes)[
-			Math.floor(Math.random() * Object.keys(palettes).length)
+		return Object.values(palettes[matchIndex])[
+			Math.floor(Math.random() * Object.keys(palettes[matchIndex]).length)
 		];
 	}
 
@@ -291,12 +326,18 @@
 		startButton = document.getElementById('startButton');
 		hud = document.getElementById('hud');
 		viewfinder = document.getElementById('viewfinder');
+		guide = document.getElementById('guide');
 
 		canvasTest.width = window.innerWidth;
 		canvasTest.height = window.innerHeight;
 
 		startButton.addEventListener('click', start);
-		hud.addEventListener('click', launch);
+		hud.addEventListener('click', function() {
+			if (framesSinceStart > 480) {
+				matchIndex = highestMatchProgressIndex;
+				launch();
+			}
+		});
 	}
 
 	function start() {
@@ -471,7 +512,14 @@
 			}
 		} else {
 			matchImage();
-			viewfinder.style.opacity = Math.sqrt(1 - featureMatchProgress);
+			viewfinder.style.opacity = Math.sqrt(
+				1 -
+					Math.max(
+						featureMatchProgress[0],
+						featureMatchProgress[1],
+						featureMatchProgress[2]
+					)
+			);
 		}
 
 		controls.update();
@@ -567,14 +615,16 @@
 		).data;
 
 		var lineStride = 4 * viewfinderVideoRect.width;
+		// topLeft
 		var topColor = computeImageAverageColor(
 			data,
 			lineStride,
-			Math.floor(viewfinderVideoRect.width / 3),
+			Math.floor(viewfinderVideoRect.width / 12),
 			Math.floor(viewfinderVideoRect.height / 12),
-			Math.ceil(viewfinderVideoRect.width / 3),
+			Math.ceil(viewfinderVideoRect.width / 6),
 			Math.ceil(viewfinderVideoRect.height / 6)
 		);
+		// Middle
 		var midColor = computeImageAverageColor(
 			data,
 			lineStride,
@@ -583,6 +633,7 @@
 			Math.ceil(viewfinderVideoRect.width / 3),
 			Math.ceil(viewfinderVideoRect.height / 6)
 		);
+		// Bottom
 		var bottomColor = computeImageAverageColor(
 			data,
 			lineStride,
@@ -630,53 +681,34 @@
 			normalizedFeatureVec.forEach(function(val, index) {
 				testCtx.fillText(val, 5, 5 + 20 * (1 + index));
 			});
-			testCtx.drawImage(
-				target1,
-				0,
-				testCtx.canvas.height - target1.height,
-				target1.width,
-				target1.height
-			);
 			return;
 		}
 
-		// var errorSum =
-		// 	Math.abs(
-		// 		(paintingModel.deltaTop.r - deltaTop.r) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaTop.r))
-		// 	) +
-		// 	Math.abs(
-		// 		(paintingModel.deltaTop.g - deltaTop.g) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaTop.g))
-		// 	) +
-		// 	Math.abs(
-		// 		(paintingModel.deltaTop.b - deltaTop.b) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaTop.b))
-		// 	) +
-		// 	Math.abs(
-		// 		(paintingModel.deltaBottom.r - deltaBottom.r) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.r))
-		// 	) +
-		// 	Math.abs(
-		// 		(paintingModel.deltaBottom.g - deltaBottom.g) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.g))
-		// 	) +
-		// 	Math.abs(
-		// 		(paintingModel.deltaBottom.b - deltaBottom.b) /
-		// 			(0.00001 + Math.abs(paintingModel.deltaBottom.b))
-		// 	);
-		// var meanError = errorSum / 6;
-		var errorSum = normalizedFeatureVec.reduce(function(cur, val, index) {
-			var delta = paintingFeatureVec[index] - val;
-			return cur + delta * delta;
-		}, 0);
-		var vectorDistance = Math.sqrt(errorSum);
+		paintingFeatureVec.forEach(function(vec, index) {
+			var errorSum = normalizedFeatureVec.reduce(function(cur, val, index) {
+				var delta = vec[index] - val;
+				return cur + delta * delta;
+			}, 0);
+			var vectorDistance = Math.sqrt(errorSum);
+			featureMatchProgress[index] += 0.04 / (0.02 + vectorDistance);
+			featureMatchProgress[index] *= 0.9;
+			if (featureMatchProgress[index] >= paintingMatchThreshold[index]) {
+				matchIndex = index;
+				console.log('launch', matchIndex);
+				setTimeout(launch, 500);
+			}
+		});
 
-		featureMatchProgress += 0.06 / (0.02 + vectorDistance);
-		featureMatchProgress *= 0.8;
-		if (featureMatchProgress >= 1) {
-			setTimeout(launch, 500);
-		}
+		featureMatchProgress.forEach(function(value, index) {
+			if (featureMatchProgress[highestMatchProgressIndex] < value) {
+				highestMatchProgressIndex = index;
+			}
+		});
+
+		guide.src = ['target0.jpg', 'target1.jpg', 'target2.jpg'][
+			highestMatchProgressIndex
+		];
+		console.log(featureMatchProgress);
 	}
 
 	function computeImageAverageColor(imageData, lineStride, x, y, w, h) {

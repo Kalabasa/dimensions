@@ -40,15 +40,16 @@ body {
 }
 
 #viewfinder,
-.guide {
+#guide {
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	width: 38vmin;
 	height: 50.67vmin;
 	transform: translate(-50%, -50%);
+	animation: appear 2s 2s backwards;
 }
-.guide {
+#guide {
 	mix-blend-mode: darken;
 }
 .viewfinderCorner1 {
