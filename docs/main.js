@@ -580,6 +580,16 @@
 			console.log(
 				JSON.stringify({ deltaTop: deltaTop, deltaBottom: deltaBottom })
 			);
+			var testCtx = canvasTest.getContext('2d');
+			testCtx.clearRect(0, 0, testCtx.canvas.width, testCtx.canvas.height);
+			testCtx.fillStyle = 'magenta';
+			testCtx.font = 'bold 16px sans-serif';
+			testCtx.fillText('TR: ' + deltaTop.r, 5, 5 + 20 * 1);
+			testCtx.fillText('TG: ' + deltaTop.g, 5, 5 + 20 * 2);
+			testCtx.fillText('TB: ' + deltaTop.b, 5, 5 + 20 * 3);
+			testCtx.fillText('BR: ' + deltaBottom.r, 5, 5 + 20 * 4);
+			testCtx.fillText('BG: ' + deltaBottom.g, 5, 5 + 20 * 5);
+			testCtx.fillText('BB: ' + deltaBottom.b, 5, 5 + 20 * 6);
 			return;
 		}
 

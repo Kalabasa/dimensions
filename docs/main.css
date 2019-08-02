@@ -95,11 +95,11 @@ body {
 	position: absolute;
 	top: 20%;
 	left: 50%;
-	width: 50%;
+	width: 75%;
 	min-width: 200px;
 	color: white;
 	font-size: 16pt;
-	line-height: 1.6;
+	line-height: 20pt;
 	text-shadow: 0 0 16px #000c;
 	transform: translate(-50%, -50%);
 	text-align: center;
@@ -108,7 +108,7 @@ body {
 .instructions small {
 	opacity: 0.6;
 	font-size: 10pt;
-	line-height: 1;
+	line-height: 10pt;
 	animation: appear 1s 10s backwards;
 }
 
