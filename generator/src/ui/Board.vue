@@ -1,5 +1,10 @@
 <template>
-	<div class="board">
+	<div
+		class="board"
+		:style="{
+		'grid-template': `repeat(${height}, 1fr) / repeat(${width}, 1fr)`
+		}"
+	>
 		<template v-for="(tile, index) in tiles">
 			<component
 				:key="index"
@@ -7,6 +12,7 @@
 				:seed="seed + index.toString(36)"
 				:palette="paletteProvider(index)"
 				:orientation="tile.orientation"
+				v-bind="tile.props"
 			/>
 		</template>
 	</div>
@@ -15,7 +21,6 @@
 <style>
 .board {
 	display: grid;
-	grid-template: repeat(8, 1fr) / repeat(6, 1fr);
 }
 </style>
 
@@ -26,10 +31,18 @@ export default {
 	props: {
 		seed: {
 			type: String,
-			default: Math.random().toString(36),
+			default: Math.random().toString(36)
 		},
 		paletteProvider: Function,
-		tiles: Array
+		tiles: Array,
+		width: {
+			type: Number,
+			default: 6
+		},
+		height: {
+			type: Number,
+			default: 8
+		}
 	}
 };
 </script>

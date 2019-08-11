@@ -1,13 +1,22 @@
 <template>
 	<div class="app">
 		<div class="boardContainer">
-			<Board class="board" :seed="boardMidSeed" :paletteProvider="() => paletteMid" :tiles="tiles" />
+			<Board
+				class="board"
+				:seed="boardMidSeed"
+				:paletteProvider="() => paletteMid"
+				:tiles="tiles"
+				:width="width"
+				:height="height"
+			/>
 			<Board
 				class="board"
 				:style="{ clipPath: `circle(${circleCool.radius * 100}% at ${circleCool.x * 100}% ${circleCool.y * 100}%)` }"
 				:seed="boardCoolSeed"
 				:paletteProvider="() => paletteCool"
 				:tiles="tiles"
+				:width="width"
+				:height="height"
 			/>
 			<Board
 				class="board"
@@ -15,6 +24,8 @@
 				:seed="boardWarmSeed"
 				:paletteProvider="() => paletteWarm"
 				:tiles="tiles"
+				:width="width"
+				:height="height"
 			/>
 			<div
 				class="board boardMask"
@@ -26,6 +37,8 @@
 					:seed="boardNeutralSeed"
 					:paletteProvider="neutralPaletteProvider()"
 					:tiles="tiles"
+					:width="width"
+					:height="height"
 				/>
 			</div>
 			<QR v-if="!noQr" :palette="paletteNeutral" />
@@ -88,11 +101,13 @@
 import seedrandom from "seedrandom";
 
 import Palette from "color/palette";
+import { generatePaletteSet } from "color/scheme";
 import BrushTile from "ui/tiles/BrushTile.vue";
 import PaperTile from "ui/tiles/PaperTile.vue";
 import PencilTile from "ui/tiles/PencilTile.vue";
 import PenTile from "ui/tiles/PenTile.vue";
 import TabletTile from "ui/tiles/TabletTile.vue";
+import RecursiveTile from "./tiles/RecursiveTile.vue";
 
 const tileComponentPool = [
 	BrushTile,
@@ -105,56 +120,116 @@ const tileComponentPool = [
 const urlParams = new URLSearchParams(window.location.search);
 const noQrParam = urlParams.get("noqr");
 const seedParam = urlParams.get("seed");
+const colorsParam = urlParams.get("colors");
+const recursiveParam = urlParams.get("recursive");
 
 const noQr = noQrParam !== null;
+const randomColors = colorsParam !== null;
+const recursive = recursiveParam !== null;
 
 const seed = seedParam || Math.random().toString(36);
 const random = seedrandom(seed);
 console.log(seed);
 
-export default {
-	data: () => ({
-		tiles: Array.from(Array(6 * 8), () => ({
-			component:
-				tileComponentPool[Math.floor(random() * tileComponentPool.length)],
-			orientation: Math.floor(random() * 8)
-		})),
-		paletteCool: Palette.generatePalette(
+let palettes;
+
+if (randomColors) {
+	palettes = generatePaletteSet();
+	palettes.neutralLight = palettes.neutral;
+} else {
+	palettes = {
+		cool: Palette.generatePalette(
 			0x2d475e,
 			0x49ad9c,
 			0x99c89e,
 			0xddd359,
 			0xf6e185
 		),
-		paletteWarm: Palette.generatePalette(
+		warm: Palette.generatePalette(
 			0x132141,
 			0x4d2b52,
 			0xbb5b85,
 			0xe0e4ad,
 			0xf0e0d0
 		),
-		paletteMid: Palette.generatePalette(
+		mid: Palette.generatePalette(
 			0x4b5a67,
 			0xffd02d,
 			0xf8dd85,
 			0xf3f5ca,
 			0xfafaf9
 		),
-		paletteNeutral: Palette.generatePalette(
+		neutral: Palette.generatePalette(
 			0x2b2d38,
 			0xb8b9c9,
 			0xe8e8ee,
 			0xaaabb9,
 			0xcbced4
 		),
-		paletteNeutralLight: Palette.generatePalette(
+		neutralLight: Palette.generatePalette(
 			0xb8b9c9,
 			0xe8e8ee,
 			0xe8e8ee,
 			0xcbced4,
 			0xcbced4
-		),
-		circleCool: noQr
+		)
+	};
+}
+
+function randomizeTiles(width, height) {
+	return Array.from(Array(width * height), () => ({
+		component:
+			tileComponentPool[Math.floor(random() * tileComponentPool.length)],
+		orientation: Math.floor(random() * 8),
+		props: {
+			orientation: 0
+		}
+	}));
+}
+
+function randomizeTilesRecursive(width, height, depth = 5) {
+	return Array.from(Array(width * height), () => {
+		const nest = depth > 0 && random() < 0.1 + (depth / 5) * 0.7;
+
+		const component = nest
+			? RecursiveTile
+			: tileComponentPool[Math.floor(random() * tileComponentPool.length)];
+
+		const props = {};
+
+		if (component === RecursiveTile) {
+			props.tiles = randomizeTilesRecursive(2, 2, depth - 1);
+		}
+
+		return {
+			component,
+			orientation: Math.floor(random() * 8),
+			props
+		};
+	});
+}
+
+export default {
+	data: () => ({
+		width: recursive ? 3 : 6,
+		height: recursive ? 4 : 8,
+		tiles: recursive ? randomizeTilesRecursive(3, 4) : randomizeTiles(6, 8),
+		paletteCool: palettes.cool,
+		paletteWarm: palettes.warm,
+		paletteMid: palettes.mid,
+		paletteNeutral: palettes.neutral,
+		paletteNeutralLight: palettes.neutralLight,
+		circleCool: randomColors
+			? (() => {
+					const angle = random() * 2 * Math.PI;
+					const length = 0.2 + random() * 0.4;
+					return {
+						radius: 0.4 + random() * 0.4,
+						x: 0.5 + Math.cos(angle) * length,
+						y: 0.5 + Math.sin(angle) * length
+					};
+			  })()
+			: noQr
 			? (() => {
 					const angle = random() * 2 * Math.PI;
 					const length = 0.3 + random() * 0.6;
@@ -169,7 +244,17 @@ export default {
 					x: 1.2,
 					y: 0.6
 			  },
-		circleWarm: noQr
+		circleWarm: randomColors
+			? (() => {
+					const angle = random() * 2 * Math.PI;
+					const length = 0.2 + random() * 0.4;
+					return {
+						radius: 0.4 + random() * 0.4,
+						x: 0.5 + Math.cos(angle) * length,
+						y: 0.5 + Math.sin(angle) * length
+					};
+			  })()
+			: noQr
 			? (() => {
 					const angle = random() * 2 * Math.PI;
 					const length = 0.3 + random() * 0.6;
