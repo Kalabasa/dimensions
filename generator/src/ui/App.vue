@@ -1,6 +1,6 @@
 <template>
 	<div class="app">
-		<div class="boardContainer">
+		<div class="boardContainer" v-on:click="initialize">
 			<Board
 				class="board"
 				:seed="boardMidSeed"
@@ -131,51 +131,6 @@ const seed = seedParam || Math.random().toString(36);
 const random = seedrandom(seed);
 console.log(seed);
 
-let palettes;
-
-if (randomColors) {
-	palettes = generatePaletteSet();
-	palettes.neutralLight = palettes.neutral;
-} else {
-	palettes = {
-		cool: Palette.generatePalette(
-			0x2d475e,
-			0x49ad9c,
-			0x99c89e,
-			0xddd359,
-			0xf6e185
-		),
-		warm: Palette.generatePalette(
-			0x132141,
-			0x4d2b52,
-			0xbb5b85,
-			0xe0e4ad,
-			0xf0e0d0
-		),
-		mid: Palette.generatePalette(
-			0x4b5a67,
-			0xffd02d,
-			0xf8dd85,
-			0xf3f5ca,
-			0xfafaf9
-		),
-		neutral: Palette.generatePalette(
-			0x2b2d38,
-			0xb8b9c9,
-			0xe8e8ee,
-			0xaaabb9,
-			0xcbced4
-		),
-		neutralLight: Palette.generatePalette(
-			0xb8b9c9,
-			0xe8e8ee,
-			0xe8e8ee,
-			0xcbced4,
-			0xcbced4
-		)
-	};
-}
-
 function randomizeTiles(width, height) {
 	return Array.from(Array(width * height), () => ({
 		component:
@@ -211,74 +166,40 @@ function randomizeTilesRecursive(width, height, depth = 5) {
 
 export default {
 	data: () => ({
-		width: recursive ? 3 : 6,
-		height: recursive ? 4 : 8,
-		tiles: recursive ? randomizeTilesRecursive(3, 4) : randomizeTiles(6, 8),
-		paletteCool: palettes.cool,
-		paletteWarm: palettes.warm,
-		paletteMid: palettes.mid,
-		paletteNeutral: palettes.neutral,
-		paletteNeutralLight: palettes.neutralLight,
-		circleCool: randomColors
-			? (() => {
-					const angle = random() * 2 * Math.PI;
-					const length = 0.2 + random() * 0.4;
-					return {
-						radius: 0.4 + random() * 0.4,
-						x: 0.5 + Math.cos(angle) * length,
-						y: 0.5 + Math.sin(angle) * length
-					};
-			  })()
-			: noQr
-			? (() => {
-					const angle = random() * 2 * Math.PI;
-					const length = 0.3 + random() * 0.6;
-					return {
-						radius: 0.3 + random() * 0.6,
-						x: 0.5 + Math.cos(angle) * length,
-						y: 0.5 + Math.sin(angle) * length
-					};
-			  })()
-			: {
-					radius: 0.8,
-					x: 1.2,
-					y: 0.6
-			  },
-		circleWarm: randomColors
-			? (() => {
-					const angle = random() * 2 * Math.PI;
-					const length = 0.2 + random() * 0.4;
-					return {
-						radius: 0.4 + random() * 0.4,
-						x: 0.5 + Math.cos(angle) * length,
-						y: 0.5 + Math.sin(angle) * length
-					};
-			  })()
-			: noQr
-			? (() => {
-					const angle = random() * 2 * Math.PI;
-					const length = 0.3 + random() * 0.6;
-					return {
-						radius: 0.3 + random() * 0.6,
-						x: 0.5 + Math.cos(angle) * length,
-						y: 0.5 + Math.sin(angle) * length
-					};
-			  })()
-			: {
-					radius: 1,
-					x: 0.4,
-					y: -0.15
-			  },
-		boardMidSeed: random().toString(36),
-		boardCoolSeed: random().toString(36),
-		boardWarmSeed: random().toString(36),
-		boardNeutralSeed: random().toString(36)
+		width: 0,
+		height: 0,
+		tiles: [],
+		paletteCool: null,
+		paletteWarm: null,
+		paletteMid: null,
+		paletteNeutral: null,
+		paletteNeutralLight: null,
+		circleCool: {
+			radius: 0,
+			x: 0,
+			y: 0
+		},
+		circleWarm: {
+			radius: 0,
+			x: 0,
+			y: 0
+		},
+		boardMidSeed: "",
+		boardCoolSeed: "",
+		boardWarmSeed: "",
+		boardNeutralSeed: ""
 	}),
+
 	computed: {
 		noQr() {
 			return noQr;
 		}
 	},
+
+	created() {
+		this.initialize();
+	},
+
 	methods: {
 		neutralPaletteProvider() {
 			return index => {
@@ -291,6 +212,116 @@ export default {
 					return this.paletteNeutral;
 				}
 			};
+		},
+		initialize() {
+			let palettes;
+			if (randomColors) {
+				palettes = generatePaletteSet();
+				palettes.neutralLight = palettes.neutral;
+			} else {
+				palettes = {
+					cool: Palette.generatePalette(
+						0x2d475e,
+						0x49ad9c,
+						0x99c89e,
+						0xddd359,
+						0xf6e185
+					),
+					warm: Palette.generatePalette(
+						0x132141,
+						0x4d2b52,
+						0xbb5b85,
+						0xe0e4ad,
+						0xf0e0d0
+					),
+					mid: Palette.generatePalette(
+						0x4b5a67,
+						0xffd02d,
+						0xf8dd85,
+						0xf3f5ca,
+						0xfafaf9
+					),
+					neutral: Palette.generatePalette(
+						0x2b2d38,
+						0xb8b9c9,
+						0xe8e8ee,
+						0xaaabb9,
+						0xcbced4
+					),
+					neutralLight: Palette.generatePalette(
+						0xb8b9c9,
+						0xe8e8ee,
+						0xe8e8ee,
+						0xcbced4,
+						0xcbced4
+					)
+				};
+			}
+
+			this.width = recursive ? 3 : 6;
+			this.height = recursive ? 4 : 8;
+			this.tiles = recursive
+				? randomizeTilesRecursive(3, 4)
+				: randomizeTiles(6, 8);
+			this.paletteCool = palettes.cool;
+			this.paletteWarm = palettes.warm;
+			this.paletteMid = palettes.mid;
+			this.paletteNeutral = palettes.neutral;
+			this.paletteNeutralLight = palettes.neutralLight;
+			this.circleCool = randomColors
+				? (() => {
+						const angle = random() * 2 * Math.PI;
+						const length = 0.2 + random() * 0.4;
+						return {
+							radius: 0.4 + random() * 0.4,
+							x: 0.5 + Math.cos(angle) * length,
+							y: 0.5 + Math.sin(angle) * length
+						};
+				  })()
+				: noQr
+				? (() => {
+						const angle = random() * 2 * Math.PI;
+						const length = 0.3 + random() * 0.6;
+						return {
+							radius: 0.3 + random() * 0.6,
+							x: 0.5 + Math.cos(angle) * length,
+							y: 0.5 + Math.sin(angle) * length
+						};
+				  })()
+				: {
+						radius: 0.8,
+						x: 1.2,
+						y: 0.6
+				  };
+			this.circleWarm = randomColors
+				? (() => {
+						const angle = random() * 2 * Math.PI;
+						const length = 0.2 + random() * 0.4;
+						return {
+							radius: 0.4 + random() * 0.4,
+							x: 0.5 + Math.cos(angle) * length,
+							y: 0.5 + Math.sin(angle) * length
+						};
+				  })()
+				: noQr
+				? (() => {
+						const angle = random() * 2 * Math.PI;
+						const length = 0.3 + random() * 0.6;
+						return {
+							radius: 0.3 + random() * 0.6,
+							x: 0.5 + Math.cos(angle) * length,
+							y: 0.5 + Math.sin(angle) * length
+						};
+				  })()
+				: {
+						radius: 1,
+						x: 0.4,
+						y: -0.15
+				  };
+			this.boardMidSeed = random().toString(36);
+			this.boardCoolSeed = random().toString(36);
+			this.boardWarmSeed = random().toString(36);
+			this.boardNeutralSeed = random().toString(36);
 		}
 	}
 };
